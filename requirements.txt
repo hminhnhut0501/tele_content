@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+telethon
+pydantic
+jinja2
+cryptg

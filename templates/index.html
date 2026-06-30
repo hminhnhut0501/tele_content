@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Hub Only</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        [x-cloak] { display: none !important; }
+        body { @apply bg-slate-950 text-slate-300 font-sans; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { @apply bg-slate-800 rounded-full border-2 border-slate-950; }
+        .input-new { @apply w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none transition-all duration-200 focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-600; }
+        .btn-primary { @apply px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary-900/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed; }
+    </style>
+</head>
+<body x-data="{ activeTab: 'content_hub' }" class="overflow-hidden h-screen">
+    <div class="h-screen flex flex-col">
+        <header class="h-16 border-b border-slate-800/60 flex items-center justify-between px-6 bg-slate-950/90">
+            <div>
+                <h1 class="text-lg font-black text-white tracking-tight">Content Hub Only</h1>
+                <p class="text-[11px] text-slate-500">Bản tối giản cho Render free, chỉ giữ module nuôi kênh.</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px]">
+                <span class="px-3 py-1 rounded-full border border-emerald-700/40 bg-emerald-500/10 text-emerald-300">Render-ready</span>
+                <a href="/healthz" target="_blank" class="px-3 py-1 rounded-full border border-slate-700 text-slate-300 hover:text-white">healthz</a>
+            </div>
+        </header>
+        <main class="flex-1 overflow-hidden p-4 sm:p-6">
+            {% include 'tab_content_hub.html' %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,882 @@
+<div x-data="contentHubController()" x-init="start()" x-show="activeTab === 'content_hub'" class="flex h-full w-full gap-5 overflow-hidden text-sm" x-transition.opacity>
+    <aside class="w-[392px] shrink-0 flex flex-col gap-5 overflow-hidden">
+        <div class="bg-slate-900/55 border border-slate-800/90 rounded-2xl flex flex-col overflow-hidden shadow-[0_20px_80px_rgba(2,8,23,0.32)] h-full">
+            <div class="p-5 border-b border-slate-800/90 bg-slate-950/35">
+                <h2 class="text-[11px] font-black text-white uppercase tracking-[0.22em]">Thêm Group</h2>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto custom-scroll">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Tên Group</label>
+                    <input x-model="groupForm.name" class="input-new" placeholder="VD: Prime Team">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Group ID / Source Key</label>
+                    <input x-model="groupForm.source_key" class="input-new" placeholder="-1001234567890">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Link nguồn (tuỳ chọn)</label>
+                    <input x-model="groupForm.source_link" class="input-new" placeholder="t.me/c/...">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Kênh đích mặc định (tuỳ chọn)</label>
+                    <input x-model="groupForm.target_link" class="input-new" placeholder="t.me/c/...">
+                </div>
+                <button @click="createGroup" class="btn-primary w-full h-11 rounded-xl">Lưu Group</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-900/55 border border-slate-800/90 rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(2,8,23,0.32)]">
+        <div class="p-5 border-b border-slate-800/90 bg-slate-950/25 flex items-center justify-between">
+            <div class="flex items-center gap-3 flex-wrap">
+                <h2 class="text-[11px] font-black text-white uppercase tracking-[0.22em]">Danh sách Group</h2>
+                <div class="text-[11px] text-slate-500">Queue: <span class="text-cyan-300 font-semibold" x-text="queue.queue_size"></span> · Worker: <span class="text-cyan-300 font-semibold" x-text="queue.active_workers + '/' + queue.max_concurrency"></span></div>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-5 custom-scroll space-y-3">
+            <template x-for="g in groups" :key="g.id">
+                <div class="border rounded-2xl p-4 flex items-center justify-between gap-3 transition-colors"
+                     :class="g.auto_attention
+                        ? 'border-amber-500/50 bg-amber-500/[0.07] shadow-[0_0_28px_rgba(245,158,11,0.08)]'
+                        : 'border-slate-800/90 bg-slate-950/42 hover:border-slate-700/90 hover:bg-slate-950/60'">
+                    <div class="min-w-0">
+                        <div class="text-[15px] font-black text-white truncate" x-text="g.name + ' (' + g.source_key + ')' "></div>
+                        <div class="text-[11px] text-slate-500 mt-1" x-text="(g.topic_count || 0) + ' topics • ' + (g.item_count || 0) + ' items • ' + (g.auto_slots_count || 0) + ' slots'"></div>
+                        <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px]">
+                            <span :class="Number(g.auto_enabled || 0) ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-slate-700/90 bg-slate-900/90 text-slate-400'" class="px-2.5 py-1 rounded-full border font-semibold tracking-wide">
+                                <span x-text="Number(g.auto_enabled || 0) ? 'AUTO ON' : 'AUTO OFF'"></span>
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full border border-slate-700/90 bg-slate-900/90 text-slate-400 font-mono" x-text="'Next ' + (g.auto_next_run_in_sec || 0) + 's'"></span>
+                            <span x-show="g.auto_attention === 'content_exhausted'"
+                                  title="Tất cả campaign con đang bật đã quét tới hiện tại và không còn nội dung mới. Hãy thêm campaign con hoặc chờ nguồn có bài mới."
+                                  class="px-2.5 py-1 rounded-full border border-amber-500/50 bg-amber-500/15 text-amber-200 font-black tracking-wide">
+                                HẾT NỘI DUNG · CẦN THÊM CAMPAIGN
+                            </span>
+                            <span x-show="g.auto_attention === 'no_campaign'"
+                                  title="Auto-run đang bật nhưng group chưa có campaign con nào được bật."
+                                  class="px-2.5 py-1 rounded-full border border-rose-500/50 bg-rose-500/15 text-rose-200 font-black tracking-wide">
+                                CHƯA CÓ CAMPAIGN BẬT
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button @click="openGroup(g)" class="h-8 px-3.5 rounded-xl bg-sky-600 text-white text-[11px] font-semibold shadow-sm shadow-sky-950/30">Mở</button>
+                        <button @click="deleteGroup(g.id)" class="h-8 px-3.5 rounded-xl border border-rose-800/60 bg-rose-500/10 text-rose-300 text-[11px] font-semibold">Xoá</button>
+                    </div>
+                </div>
+            </template>
+            <div x-show="!groups.length" class="text-slate-500 text-xs">Chưa có group nào.</div>
+        </div>
+    </main>
+
+    <div x-show="drawerOpen" class="fixed inset-0 z-[90] bg-slate-950/84 backdrop-blur-md p-3 sm:p-6 flex items-center justify-center" style="display:none">
+        <div @click.away="closeDrawer()" class="w-[96vw] h-[92vh] max-w-[1880px] bg-slate-950 border border-slate-800/90 shadow-[0_24px_120px_rgba(2,8,23,0.5)] flex flex-col overflow-hidden rounded-3xl">
+            <div class="px-6 py-4.5 border-b border-slate-800/90 bg-slate-950/86 flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h3 class="text-[26px] font-black text-white leading-tight truncate" x-text="activeGroup?.name || 'Group'"></h3>
+                        <span class="px-2.5 py-1 rounded-full border border-slate-700/90 bg-slate-900/90 text-slate-300 text-[10px] font-semibold font-mono">
+                            ID: <span x-text="activeGroup?.source_key || ''"></span>
+                        </span>
+                        <span class="px-2.5 py-1 rounded-full border border-cyan-700/40 bg-cyan-500/10 text-cyan-300 text-[10px] font-semibold" x-text="'Queue ' + (queue.queue_size || 0)"></span>
+                        <span class="px-2.5 py-1 rounded-full border border-emerald-700/40 bg-emerald-500/10 text-emerald-300 text-[10px] font-semibold" x-text="'Worker ' + (queue.active_workers || 0) + '/' + (queue.max_concurrency || 1)"></span>
+                    </div>
+                    <div class="mt-2 text-[11px] text-slate-500 flex flex-wrap gap-4">
+                        <span x-text="'Topics ' + (groupProgress.total_topics || 0)"></span>
+                        <span x-text="'Items ' + (groupProgress.total_items || 0)"></span>
+                        <span x-text="'Running ' + (groupProgress.running_items || 0)"></span>
+                        <span x-text="'Queue ' + (groupProgress.queued_items || 0)"></span>
+                        <span x-text="'Done ' + (groupProgress.done_items || 0)"></span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button @click="toggleGroupAuto()" class="h-10 px-3.5 rounded-xl text-[11px] font-semibold border"
+                            :class="groupAutoForm.auto_enabled ? 'border-emerald-700/50 bg-emerald-500/10 text-emerald-300' : 'border-slate-700 bg-slate-900 text-slate-300'"
+                            x-text="groupAutoForm.auto_enabled ? 'Tắt auto' : 'Bật auto'"></button>
+                    <button @click="saveGroupAuto()" class="h-10 px-4 rounded-xl bg-teal-600 text-white text-[11px] font-semibold shadow-sm shadow-teal-950/20">Lưu auto</button>
+                    <button @click="closeDrawer()" class="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">✕</button>
+                </div>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-4">
+                <div x-show="notice.text">
+                    <div :class="notice.type==='error' ? 'border-rose-900/40 bg-rose-500/10 text-rose-200' : 'border-emerald-900/40 bg-emerald-500/10 text-emerald-200'" class="rounded-2xl border px-4 py-3 text-[11px] shadow-sm">
+                        <span x-text="notice.text"></span>
+                    </div>
+                </div>
+
+                <section class="grid grid-cols-12 gap-3">
+                    <div class="col-span-12 lg:col-span-7 grid grid-cols-12 gap-3">
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Topics total</div>
+                            <div class="mt-2 text-3xl font-black text-white" x-text="groupProgress.total_topics || 0"></div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Running campaigns</div>
+                            <div class="mt-2 text-3xl font-black text-cyan-300" x-text="groupProgress.running_items || 0"></div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Queue</div>
+                            <div class="mt-2 text-3xl font-black text-amber-300" x-text="groupProgress.queued_items || 0"></div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Done</div>
+                            <div class="mt-2 text-3xl font-black text-emerald-300" x-text="groupProgress.done_items || 0"></div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Next auto run</div>
+                            <div class="mt-2 text-sm font-semibold text-cyan-300" x-text="Number(activeGroup?.auto_next_run_at || 0) ? new Date(Number(activeGroup.auto_next_run_at) * 1000).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false }) : '-'"></div>
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 rounded-2xl border border-slate-800/90 bg-gradient-to-br from-slate-900/42 to-slate-950/40 p-4">
+                            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Last result</div>
+                            <div class="mt-2 text-sm font-semibold text-emerald-300" x-text="activeGroup?.auto_last_result || '-'"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-5 rounded-2xl border border-teal-800/45 bg-gradient-to-br from-teal-500/7 to-slate-950/30 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="text-[11px] font-semibold text-slate-200 uppercase tracking-[0.18em]">Auto-run Group</div>
+                                <div class="text-[10px] text-slate-500 mt-1">Bật một lần, scheduler sẽ chạy theo khung giờ riêng của group cho tới khi bạn tắt.</div>
+                            </div>
+                            <button @click="showGroupLogs = !showGroupLogs" class="h-8 px-3.5 rounded-lg border border-slate-700/90 text-[10px] text-slate-300" x-text="showGroupLogs ? 'Ẩn log' : 'Xem log'"></button>
+                        </div>
+                        <div class="mt-3 grid grid-cols-12 gap-2">
+                            <div class="col-span-12 lg:col-span-6 space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Khung giờ</label>
+                                <input x-model="groupAutoForm.auto_slots" class="input-new h-9 text-xs" placeholder="09:00, 12:00, 15:00, 21:00">
+                            </div>
+                            <div class="col-span-6 lg:col-span-3 space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Số topic/lượt</label>
+                                <input type="number" min="1" max="50" x-model.number="groupAutoForm.auto_pick_count" class="input-new h-9 text-center text-xs">
+                            </div>
+                            <div class="col-span-6 lg:col-span-3 space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Chiến lược</label>
+                                <select x-model="groupAutoForm.auto_strategy" class="input-new h-9 text-xs">
+                                    <option value="round_robin">Round-robin</option>
+                                    <option value="random">Random</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-[10px] text-slate-500 flex flex-wrap gap-3">
+                            <span>Đang: <span class="text-slate-200 font-mono" x-text="groupAutoSummary()"></span></span>
+                            <span>KQ: <span class="text-emerald-300 font-mono" x-text="activeGroup?.auto_last_result || '-'"></span></span>
+                        </div>
+                    </div>
+                </section>
+
+                <template x-if="showGroupLogs">
+                    <div class="rounded-2xl border border-slate-800/90 bg-slate-900/28 p-3 max-h-40 overflow-y-auto custom-scroll">
+                        <div class="text-[11px] font-semibold text-slate-400 mb-2">Log Group</div>
+                        <template x-for="e in groupLogs" :key="e.id">
+                            <div class="text-[11px] border border-slate-800 rounded px-2 py-1 mb-1 bg-slate-950/40">
+                                <span class="text-slate-500" x-text="new Date((e.created_at||0)*1000).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false })"></span>
+                                <span class="mx-1">·</span>
+                                <span :class="e.level==='error' ? 'text-rose-300' : e.level==='ok' ? 'text-emerald-300' : 'text-cyan-300'" x-text="e.code"></span>
+                                <span class="mx-1">·</span>
+                                <span class="text-slate-300" x-text="e.message"></span>
+                            </div>
+                        </template>
+                        <div x-show="!groupLogs.length" class="text-[11px] text-slate-500">Chưa có log group.</div>
+                    </div>
+                </template>
+
+                <div class="grid grid-cols-12 gap-4 min-h-[52vh]">
+                    <aside class="col-span-12 xl:col-span-4 rounded-2xl border border-slate-800/90 bg-slate-900/30 overflow-hidden flex flex-col min-h-0">
+                        <div class="p-3 border-b border-slate-800/90 bg-slate-950/30">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.18em]">Left Topic Rail</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">Chọn topic để mở workspace.</div>
+                                </div>
+                                <button @click="showOps = !showOps" class="h-7 px-2.5 rounded border border-slate-700/90 text-[10px] text-slate-300" x-text="showOps ? 'Ẩn stats' : 'Hiện stats'"></button>
+                            </div>
+                            <div class="mt-2">
+                                <input x-model="topicSearch" class="input-new h-8 text-xs py-1.5" placeholder="Tìm topic theo tên / id...">
+                            </div>
+                            <div class="mt-2 grid grid-cols-4 gap-1">
+                                <button @click="topicFilter='all'" :class="topicFilter==='all' ? 'bg-sky-600 text-white' : 'bg-slate-900/90 text-slate-300'" class="h-7 rounded-lg text-[10px]">Tất cả</button>
+                                <button @click="topicFilter='pending'" :class="topicFilter==='pending' ? 'bg-amber-600 text-white' : 'bg-slate-900/90 text-slate-300'" class="h-7 rounded-lg text-[10px]">Cần chạy</button>
+                                <button @click="topicFilter='running'" :class="topicFilter==='running' ? 'bg-cyan-600 text-white' : 'bg-slate-900/90 text-slate-300'" class="h-7 rounded-lg text-[10px]">Đang chạy</button>
+                                <button @click="topicFilter='done'" :class="topicFilter==='done' ? 'bg-emerald-600 text-white' : 'bg-slate-900/90 text-slate-300'" class="h-7 rounded-lg text-[10px]">Hoàn tất</button>
+                            </div>
+                            <div class="mt-2 flex gap-2">
+                                <input x-model="topicForm.topic_link" class="input-new h-8 text-xs py-1.5" placeholder="dán link msg topic...">
+                                <button @click="createTopic" class="h-8 px-3 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">Tạo</button>
+                            </div>
+                            <div class="mt-1 text-[10px] text-slate-500">Ví dụ: `t.me/c/123456/1989/2288`</div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto custom-scroll p-2.5 space-y-2.5">
+                            <template x-for="t in filteredTopics()" :key="t.id">
+                                <div @click="selectTopic(t)" :class="selectedTopic?.id===t.id ? 'border-sky-500/45 bg-sky-500/10 shadow-[0_0_0_1px_rgba(56,189,248,0.08)]' : 'border-slate-800/90 bg-slate-950/42'" class="border rounded-2xl p-3 cursor-pointer transition-colors hover:border-slate-700/90 hover:bg-slate-950/58">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-semibold text-white truncate" x-text="t.name"></div>
+                                            <div class="text-[10px] text-slate-500 mt-0.5" x-text="'#' + (t.source_topic_id || 0) + ' -> #' + (t.target_topic_id || 0)"></div>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full border border-slate-700/90 bg-slate-900/90 text-slate-400 text-[10px] font-semibold" x-text="(t.item_count || 0) + ' items'"></span>
+                                    </div>
+                                    <div class="mt-2 text-[10px] text-slate-400 flex flex-wrap gap-2">
+                                        <span>Còn lại: <span class="text-amber-300 font-semibold" x-text="t.remaining_items || 0"></span></span>
+                                        <span>Đã chạy: <span class="text-emerald-300 font-semibold" x-text="t.done_items || 0"></span></span>
+                                        <span>Queue: <span class="text-cyan-300 font-semibold" x-text="t.queued_count || 0"></span></span>
+                                        <span x-show="t.is_running_topic" class="px-2 py-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 font-semibold">Running</span>
+                                    </div>
+                                    <div class="mt-2 flex items-center justify-between gap-2">
+                                        <span class="text-[10px] text-slate-500" x-text="'Tổng ' + (t.total_items || t.item_count || 0)"></span>
+                                        <div class="flex items-center gap-2">
+                                            <button @click.stop="renameTopic(t)" class="text-[10px] text-cyan-300">Sửa tên</button>
+                                            <button @click.stop="deleteTopic(t.id)" class="text-[10px] text-rose-300">Xoá</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="!filteredTopics().length" class="text-[11px] text-slate-500 px-1 py-2">Không có topic phù hợp bộ lọc.</div>
+                        </div>
+                    </aside>
+
+                    <section class="col-span-12 xl:col-span-8 rounded-2xl border border-slate-800/90 bg-slate-900/30 overflow-hidden flex flex-col min-h-0">
+                        <div class="p-3 border-b border-slate-800/90 bg-slate-950/25 flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.14em]">Right Campaign Workspace</div>
+                                <div class="text-[11px] text-slate-500 mt-1">Topic đang chọn: <span class="text-white font-semibold" x-text="selectedTopic?.name || 'Chưa chọn'"></span></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button x-show="selectedTopic" @click="runTopic(selectedTopic.id)" class="h-8 px-3 rounded-lg bg-emerald-700 text-[10px] text-white">Chạy topic</button>
+                                <button x-show="selectedTopic" @click="stopAllInTopic()" class="h-8 px-3 rounded-lg bg-amber-700 text-[10px] text-white">Dừng topic</button>
+                                <button x-show="selectedTopic" @click="resetErrorsInTopic()" class="h-8 px-3 rounded-lg bg-slate-700 text-[10px] text-white">Reset lỗi</button>
+                                <button x-show="selectedTopic" @click="openCreateForm()" class="h-8 px-3 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">+ Thêm nội dung</button>
+                            </div>
+                        </div>
+
+                        <div x-show="!formOpen" class="flex-1 min-h-0 flex flex-col">
+                            <div class="px-3 py-2 border-b border-slate-800/90 flex items-center justify-between gap-2">
+                                <div class="text-[10px] text-slate-500">
+                                    Bấm chạy ngay tại topic đang chọn để đẩy toàn bộ campaign con đang bật.
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button x-show="logItemId" @click="showCampaignLogs = !showCampaignLogs" class="h-7 px-2.5 rounded border border-slate-700 text-slate-300 text-[10px] font-semibold" x-text="showCampaignLogs ? 'Ẩn log' : 'Xem log'"></button>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-h-0 overflow-y-auto custom-scroll">
+                                <table class="w-full text-[11px]">
+                                    <thead class="bg-slate-950/78 sticky top-0 z-10 backdrop-blur">
+                                        <tr class="text-slate-400">
+                                            <th class="text-left px-3 py-2">Campaign</th>
+                                            <th class="text-left px-3 py-2">Trạng thái</th>
+                                            <th class="text-left px-3 py-2">Tiến trình</th>
+                                            <th class="text-left px-3 py-2">Cursor</th>
+                                            <th class="text-left px-3 py-2">Queue</th>
+                                            <th class="text-right px-3 py-2">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="it in items" :key="it.id">
+                                            <tr class="border-t border-slate-800/90 hover:bg-slate-950/20">
+                                                <td class="px-3 py-3 text-white align-top">
+                                                    <div class="font-semibold" x-text="it.title || ('Campaign #' + it.id)"></div>
+                                                    <div class="mt-1 text-[10px] text-slate-500" x-text="'Target ' + (it.target_link || '-')"></div>
+                                                </td>
+                                                <td class="px-3 py-3 text-slate-300 align-top">
+                                                    <div class="flex flex-wrap items-center gap-1.5">
+                                                        <span x-show="String(it.status || '') === 'Running one-shot'" class="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 font-semibold">One-shot</span>
+                                                        <span x-show="String(it.status || '') === 'Running full'" class="px-2 py-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 font-semibold">Run until empty</span>
+                                                        <span x-show="!['Running one-shot','Running full'].includes(String(it.status || ''))" x-text="it.status || 'Nháp'"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-3 py-3 text-slate-300 align-top">
+                                                    <span x-text="'Msg ' + Number(it.sent_count || 0)"></span>
+                                                    <span class="mx-1">·</span>
+                                                    <span x-text="'Unit ' + Number(it.sent_units_count || 0)"></span>
+                                                    <span x-show="Number(it.batch_size || 0) > 0" x-text="' / Lô ' + Number(it.batch_size || 0)"></span>
+                                                </td>
+                                                <td class="px-3 py-3 text-slate-300 align-top">
+                                                    <div class="flex flex-wrap items-center gap-1">
+                                                        <span class="font-mono text-cyan-300" x-text="Number(it.last_msg_id || 0) || '-'"></span>
+                                                        <span x-show="Number(it.last_msg_id || 0) > 0" class="px-2 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-[10px] font-semibold" title="Cursor đang được giữ lại từ lần chạy trước, nên item này sẽ tiếp tục từ last_msg_id thay vì quét lại từ đầu">
+                                                            Cursor preserved
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-3 py-3 text-slate-400 align-top">
+                                                    <div class="flex flex-wrap items-center gap-1">
+                                                        <span x-show="!String(it.source_end_link || '').trim()" class="px-2 py-0.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300" title="Chỉ quét từ source_start_link tới hiện tại, rồi bám cursor last_msg_id để lấy tin mới">
+                                                            Auto follow latest
+                                                        </span>
+                                                        <span x-show="String(it.source_end_link || '').trim()" class="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400" title="Quét theo khoảng start/end đã nhập">
+                                                            Range fixed
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400" x-text="'#' + (it.queue_position || 0) + ' · ' + (it.next_run_in_sec || 0) + 's'"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-3 py-3 align-top">
+                                                    <div class="flex justify-end gap-1 flex-wrap">
+                                                        <button @click="editItem(it)" class="h-7 px-2 rounded border border-slate-700 text-[10px] text-slate-300">Sửa</button>
+                                                        <button @click="runItem(it.id)" class="h-7 px-2 rounded bg-emerald-600 text-[10px] font-semibold text-white shadow-sm shadow-emerald-950/20">Chạy 1</button>
+                                                        <button @click="runItemFull(it.id)" class="h-7 px-2 rounded border border-cyan-500/30 bg-cyan-500/10 text-[10px] font-semibold text-cyan-300 shadow-sm shadow-cyan-950/20">Chạy hết</button>
+                                                        <button @click="stopItem(it.id)" class="h-7 px-2 rounded bg-amber-600 text-[10px] text-white">Dừng</button>
+                                                        <button @click="toggleItemTools(it.id)" class="h-7 px-2 rounded border border-slate-700 text-[10px] text-slate-300">...</button>
+                                                    </div>
+                                                    <div x-show="openItemToolsId===it.id" class="mt-1 flex justify-end gap-1 flex-wrap">
+                                                        <button @click="resetItem(it.id)" class="h-7 px-2 rounded bg-slate-700 text-[10px] text-white">Reset</button>
+                                                        <button @click="viewItemLog(it.id)" class="h-7 px-2 rounded border border-cyan-800/50 bg-cyan-500/10 text-[10px] text-cyan-300">Log</button>
+                                                        <button @click="deleteItem(it.id)" class="h-7 px-2 rounded bg-rose-700 text-[10px] text-white">Xoá</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                <div x-show="selectedTopic && !items.length" class="p-4 text-xs text-slate-500">Chưa có nội dung trong topic này.</div>
+                                <div x-show="!selectedTopic" class="p-4 text-xs text-slate-500">Chọn topic ở sidebar để quản lý nội dung.</div>
+                            </div>
+                        </div>
+
+                        <div x-show="formOpen" class="flex-1 min-h-0 border-t border-slate-800/90 bg-slate-950/30 flex flex-col overflow-hidden">
+                            <div class="p-3 border-b border-slate-800/90 flex items-center justify-between">
+                                <div class="text-[11px] font-semibold text-slate-400">Thêm/Sửa campaign con</div>
+                                <button @click="formOpen=false" class="h-7 px-2.5 rounded border border-slate-700 text-[10px] text-slate-300">Đóng</button>
+                            </div>
+                            <div class="flex-1 min-h-0 overflow-y-auto custom-scroll p-3 space-y-3">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase">Link nguồn / Topic</label>
+                                        <input x-model="itemForm.source_start_link" class="input-new" placeholder="t.me/c/group/topic/msg">
+                                        <div class="mt-1 text-[10px] text-slate-500">Hỗ trợ cả `t.me/c/...`, `t.me/username/msg`, và `t.me/username/topic/msg`.</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase">Link kết thúc (tuỳ chọn)</label>
+                                        <input x-model="itemForm.source_end_link" @input="onSourceEndInput($event.target.value)" class="input-new" placeholder="t.me/c/...">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/40 px-3 py-2.5">
+                                    <div>
+                                        <div class="text-[10px] font-bold text-slate-500 uppercase">Chỉ quét từ source_start_link tới hiện tại</div>
+                                        <div class="text-[10px] text-slate-500">Bật để bỏ trống Link kết thúc, rồi lần sau chạy tiếp theo cursor last_msg_id.</div>
+                                    </div>
+                                    <button @click="toggleFollowLatest()" class="h-8 px-3 rounded-lg text-[11px] font-semibold border"
+                                            :class="itemForm.follow_latest ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300' : 'border-slate-700 bg-slate-900 text-slate-300'"
+                                            x-text="itemForm.follow_latest ? 'Bật' : 'Tắt'"></button>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase">Kênh đích (hỗ trợ topic)</label>
+                                        <button @click="targetReadonly = !targetReadonly"
+                                                :class="targetReadonly ? 'text-amber-300 border-amber-800/40 bg-amber-500/10' : 'text-cyan-300 border-cyan-800/40 bg-cyan-500/10'"
+                                                class="h-6 px-2 rounded-md border text-[10px] font-semibold">
+                                            <span x-text="targetReadonly ? 'Sửa tay' : 'Khoá lại'"></span>
+                                        </button>
+                                    </div>
+                                    <input x-model="itemForm.target_link"
+                                           :readonly="targetReadonly"
+                                           :class="targetReadonly ? 'opacity-80 cursor-not-allowed border-slate-700/80 bg-slate-950/70' : ''"
+                                           class="input-new"
+                                           placeholder="Dán link topic hoặc @username">
+                                    <div class="mt-1 text-[10px] text-slate-500" x-show="targetReadonly">Đang khoá tự động theo topic đã chọn để tránh nhầm đích.</div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Tiêu đề nội dung</label>
+                                    <input x-model="itemForm.title" class="input-new" placeholder="VD: Bài sáng">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Caption mặc định</label>
+                                    <textarea x-model="itemForm.caption" rows="3" class="input-new resize-none" placeholder="Để trống nếu muốn giữ nguyên hoặc auto"></textarea>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase">Kiểu gộp media</label>
+                                        <select x-model="itemForm.group_mode" class="input-new">
+                                            <option value="keep">Native (Giữ Album)</option>
+                                            <option value="split">Split</option>
+                                            <option value="smart">Smart</option>
+                                            <option value="pair">Pair</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase">Thứ tự quét</label>
+                                        <select x-model="itemForm.order_mode" class="input-new">
+                                            <option value="auto">Tự động</option>
+                                            <option value="oldest">Cũ tới mới</option>
+                                            <option value="newest">Mới tới cũ</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Số lượng</label><input type="number" x-model.number="itemForm.batch_size" class="input-new text-center"></div>
+                                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Delay Min</label><input type="number" x-model.number="itemForm.delay_min" class="input-new text-center"></div>
+                                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Delay Max</label><input type="number" x-model.number="itemForm.delay_max" class="input-new text-center"></div>
+                                </div>
+                                <div class="pt-1">
+                                    <button @click="saveItem" class="btn-primary w-full h-11 rounded-xl">Lưu nội dung</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="logItemId && showCampaignLogs" class="border-t border-slate-800/90 bg-slate-950/35 p-3 max-h-40 overflow-y-auto custom-scroll">
+                            <div class="text-[11px] font-semibold text-slate-400 mb-2">Log campaign #<span x-text="logItemId"></span></div>
+                            <template x-for="e in itemLogs" :key="e.id">
+                                <div class="text-[11px] border border-slate-800 rounded px-2 py-1 mb-1 bg-slate-950/40">
+                                    <span class="text-slate-500" x-text="new Date((e.created_at||0)*1000).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false })"></span>
+                                    <span class="mx-1">·</span>
+                                    <span :class="e.level==='error' ? 'text-rose-300' : e.level==='ok' ? 'text-emerald-300' : 'text-cyan-300'" x-text="e.code"></span>
+                                    <span class="mx-1">·</span>
+                                    <span class="text-slate-300" x-text="e.message"></span>
+                                </div>
+                            </template>
+                            <div x-show="!itemLogs.length" class="text-[11px] text-slate-500">Chưa có log campaign.</div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('contentHubController', () => ({
+    loading: false,
+    groups: [],
+    topics: [],
+    items: [],
+    queue: {queue_size:0, active_workers:0, max_concurrency:1, items:[]},
+    notice: {type:'ok', text:''},
+    drawerOpen: false,
+    activeGroup: null,
+    selectedTopic: null,
+    editingItemId: null,
+    targetReadonly: true,
+    groupForm: {name:'', source_key:'', source_link:'', target_link:''},
+    topicForm: {name:'', topic_link:'', source_topic_id:0, target_topic_id:0, last_msg_id:0},
+    itemForm: {title:'', source_start_link:'', source_end_link:'', follow_latest:true, target_link:'', caption:'', group_mode:'keep', order_mode:'auto', batch_size:1, delay_min:1, delay_max:7},
+    itemLogs: [],
+    logItemId: 0,
+    groupProgress: {total_topics:0,total_items:0,running_items:0,queued_items:0,done_items:0,error_items:0,completed_ratio:0},
+    groupLogs: [],
+    showOps: false,
+    showGroupLogs: false,
+    showCampaignLogs: false,
+    formOpen: false,
+    openItemToolsId: 0,
+    topicSearch: '',
+    topicFilter: 'all',
+    groupAutoForm: {auto_enabled:false, auto_slots:'09:00, 12:00, 15:00, 21:00', auto_pick_count: 1, auto_strategy:'round_robin'},
+
+    buildTopicTargetLink(baseLink, topicId) {
+      const base = String(baseLink || '').trim();
+      const tid = Number(topicId || 0);
+      if (tid <= 0) return base;
+      if (!base) return '';
+      if (/^-?\d+$/.test(base)) {
+        const cid = base.replace('-100', '');
+        return `https://t.me/c/${cid}/${tid}/1`;
+      }
+      const norm = base.replace(/^https?:\/\//i, '');
+      const m = norm.match(/^t\.me\/c\/(\d+)(?:\/(\d+))?(?:\/(\d+))?$/i);
+      if (!m) return base;
+      const cid = m[1];
+      const msg = m[3] || m[2] || '1';
+      return `https://t.me/c/${cid}/${tid}/${msg}`;
+    },
+
+    start() { this.refreshAll(); this.timer = setInterval(()=>this.refreshLight(), 3000); },
+    destroy() { if (this.timer) clearInterval(this.timer); },
+
+    loadGroupAutoForm(group) {
+      this.groupAutoForm = {
+        auto_enabled: Boolean(Number(group?.auto_enabled || 0)),
+        auto_slots: String(group?.auto_slots || '09:00, 12:00, 15:00, 21:00'),
+        auto_pick_count: Math.max(1, Number(group?.auto_pick_count || 1)),
+        auto_strategy: String(group?.auto_strategy || 'round_robin'),
+      };
+    },
+
+    groupAutoSummary() {
+      return `${this.groupAutoForm.auto_enabled ? 'ON' : 'OFF'} · ${Number(this.groupAutoForm.auto_pick_count || 1)} topic · ${this.groupAutoForm.auto_strategy || 'round_robin'}`;
+    },
+
+    async refreshLight() {
+      try {
+        const gr = await fetch('/api/content_hub/groups', {cache:'no-store'});
+        if (gr.ok) this.groups = await gr.json();
+        const q = await fetch('/api/content_hub/queue', {cache:'no-store'});
+        if (q.ok) this.queue = await q.json();
+        if (this.drawerOpen && this.activeGroup?.id) {
+          const gp = await fetch(`/api/content_hub/group_progress/${this.activeGroup.id}`, {cache:'no-store'});
+          if (gp.ok) this.groupProgress = await gp.json();
+          const ge = await fetch(`/api/content_hub/group_events/${this.activeGroup.id}?limit=60`, {cache:'no-store'});
+          if (ge.ok) this.groupLogs = await ge.json();
+        }
+        if (this.drawerOpen && this.selectedTopic?.id) {
+          const r = await fetch(`/api/content_hub/items/${this.selectedTopic.id}`, {cache:'no-store'});
+          if (r.ok) this.items = await r.json();
+        }
+      } catch(_) {}
+    },
+
+    async refreshAll() {
+      this.loading = true;
+      const keepGroupId = this.activeGroup?.id || 0;
+      const keepTopicId = this.selectedTopic?.id || 0;
+      try {
+        const r = await fetch('/api/content_hub/groups', {cache:'no-store'});
+        this.groups = r.ok ? await r.json() : [];
+        await this.refreshLight();
+        if (keepGroupId) {
+          const g = this.groups.find(x => Number(x.id) === Number(keepGroupId));
+          if (g) {
+            this.activeGroup = g;
+            this.loadGroupAutoForm(g);
+            await this.loadTopics(g.id);
+            if (keepTopicId) {
+              const t = this.topics.find(x => Number(x.id) === Number(keepTopicId));
+              if (t) await this.selectTopic(t);
+            }
+          }
+        }
+      } finally { this.loading = false; }
+    },
+
+    async createGroup() {
+      if (!this.groupForm.name || !this.groupForm.source_key) return alert('Nhập tên group và source key');
+      const res = await fetch('/api/content_hub/groups', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.groupForm)});
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) return alert(out.error || 'Không tạo được group');
+      this.notice = {type:'ok', text:'Đã tạo group thành công.'};
+      this.groupForm = {name:'', source_key:'', source_link:'', target_link:''};
+      await this.refreshAll();
+    },
+
+    async deleteGroup(id) {
+      if (!confirm('Xoá group và toàn bộ topic/nội dung?')) return;
+      await fetch(`/api/content_hub/groups/${id}`, {method:'DELETE'});
+      if (this.activeGroup && Number(this.activeGroup.id) === Number(id)) this.closeDrawer();
+      await this.refreshAll();
+    },
+
+    async openGroup(g) {
+      this.activeGroup = g;
+      this.drawerOpen = true;
+      this.loadGroupAutoForm(g);
+      await this.loadTopics(g.id);
+      this.selectedTopic = null;
+      this.items = [];
+      this.formOpen = false;
+      this.openItemToolsId = 0;
+      this.groupProgress = {total_topics:0,total_items:0,running_items:0,queued_items:0,done_items:0,error_items:0,completed_ratio:0};
+      this.groupLogs = [];
+      this.resetItemForm();
+    },
+
+    closeDrawer() {
+      this.drawerOpen = false;
+      this.activeGroup = null;
+      this.selectedTopic = null;
+      this.topics = [];
+      this.items = [];
+      this.formOpen = false;
+      this.openItemToolsId = 0;
+      this.groupProgress = {total_topics:0,total_items:0,running_items:0,queued_items:0,done_items:0,error_items:0,completed_ratio:0};
+      this.groupLogs = [];
+      this.resetItemForm();
+    },
+
+    async saveGroupAuto() {
+      if (!this.activeGroup?.id) return;
+      const res = await fetch(`/api/content_hub/groups/${this.activeGroup.id}/auto`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(this.groupAutoForm)
+      });
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) {
+        this.notice = {type:'error', text: out.error || 'Không lưu được auto-run.'};
+        return;
+      }
+      this.notice = {type:'ok', text:`Đã lưu auto-run cho group ${this.activeGroup.name || ''}.`};
+      this.activeGroup = { ...this.activeGroup, ...out };
+      this.loadGroupAutoForm(this.activeGroup);
+      await this.refreshAll();
+    },
+
+    async toggleGroupAuto() {
+      this.groupAutoForm.auto_enabled = !this.groupAutoForm.auto_enabled;
+      await this.saveGroupAuto();
+    },
+
+    async loadTopics(groupId) {
+      const r = await fetch(`/api/content_hub/topics/${groupId}`, {cache:'no-store'});
+      this.topics = r.ok ? await r.json() : [];
+    },
+
+    async createTopic() {
+      if (!this.activeGroup) return;
+      if (!this.topicForm.topic_link && !this.topicForm.name) return alert('Dán link msg topic hoặc nhập tên topic');
+      if (!this.topicForm.name && this.topicForm.topic_link) {
+        const m = String(this.topicForm.topic_link || '').trim().match(/t\.me\/(?:c\/)?([^/]+)\/(\d+)(?:\/(\d+))?/i);
+        const tid = m ? Number(m[2] || m[3] || 0) : 0;
+        this.topicForm.name = tid > 0 ? `Topic ${tid}` : 'Topic mới';
+      }
+      const res = await fetch(`/api/content_hub/topics/${this.activeGroup.id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.topicForm)});
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) return alert(out.error || 'Không tạo được topic');
+      this.notice = {type:'ok', text:'Đã tạo topic thành công. Chọn topic để thêm nội dung.'};
+      this.topicForm = {name:'', topic_link:'', source_topic_id:0, target_topic_id:0, last_msg_id:0};
+      await this.loadTopics(this.activeGroup.id);
+    },
+
+    async deleteTopic(topicId) {
+      if (!confirm('Xoá topic và toàn bộ nội dung?')) return;
+      await fetch(`/api/content_hub/topics/${topicId}`, {method:'DELETE'});
+      if (this.selectedTopic && Number(this.selectedTopic.id) === Number(topicId)) {
+        this.selectedTopic = null;
+        this.items = [];
+      }
+      await this.loadTopics(this.activeGroup.id);
+    },
+
+    async renameTopic(topic) {
+      const current = String(topic?.name || '').trim();
+      const val = prompt('Nhập tên topic mới:', current);
+      if (val === null) return;
+      const name = String(val || '').trim();
+      if (!name) return alert('Tên topic không được rỗng');
+      const res = await fetch(`/api/content_hub/topics_rename/${topic.id}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name})
+      });
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) return alert(out.error || 'Không đổi tên được topic');
+      this.notice = {type:'ok', text:`Đã đổi tên topic thành: ${name}`};
+      await this.loadTopics(this.activeGroup.id);
+      if (this.selectedTopic && Number(this.selectedTopic.id) === Number(topic.id)) {
+        const fresh = this.topics.find(t => Number(t.id) === Number(topic.id));
+        if (fresh) this.selectedTopic = fresh;
+      }
+    },
+
+    async selectTopic(topic) {
+      this.selectedTopic = topic;
+      this.formOpen = false;
+      this.openItemToolsId = 0;
+      this.resetItemForm();
+      const seed = String(topic?.target_link_seed || '').trim();
+      const base = String(this.activeGroup?.target_link || '').trim() || String(this.activeGroup?.source_key || '').trim();
+      this.itemForm.target_link = seed || this.buildTopicTargetLink(base, topic?.target_topic_id || 0);
+      this.targetReadonly = true;
+      const r = await fetch(`/api/content_hub/items/${topic.id}`, {cache:'no-store'});
+      this.items = r.ok ? await r.json() : [];
+    },
+
+    editItem(it) {
+      this.editingItemId = it.id;
+      this.formOpen = true;
+      this.itemForm = {
+        title: it.title || '', source_start_link: it.source_start_link || '', source_end_link: it.source_end_link || '',
+        follow_latest: !String(it.source_end_link || '').trim(),
+        target_link: it.target_link || '', caption: it.caption || '', group_mode: it.group_mode || 'keep', order_mode: it.order_mode || 'auto',
+        batch_size: Number(it.batch_size || 0), delay_min: Number(it.delay_min || 1), delay_max: Number(it.delay_max || 7)
+      };
+      this.targetReadonly = true;
+      this.viewItemLog(it.id);
+    },
+
+    resolveTopicTargetLink() {
+      const t = this.selectedTopic || {};
+      const seed = String(t?.target_link_seed || '').trim();
+      if (seed) return seed;
+      const base = String(this.activeGroup?.target_link || '').trim() || String(this.activeGroup?.source_key || '').trim();
+      const tid = Number(t?.target_topic_id || t?.source_topic_id || 0);
+      return this.buildTopicTargetLink(base, tid);
+    },
+
+    resetItemForm() {
+      this.editingItemId = null;
+      this.itemForm = {
+        title:'',
+        source_start_link:'',
+        source_end_link:'',
+        follow_latest:true,
+        target_link: this.resolveTopicTargetLink() || (this.activeGroup?.target_link || this.activeGroup?.source_key || ''),
+        caption:'',
+        group_mode:'keep',
+        order_mode:'auto',
+        batch_size:1,
+        delay_min:1,
+        delay_max:7
+      };
+    },
+
+    openCreateForm() {
+      this.resetItemForm();
+      // Keep target locked to selected topic default to avoid wrong destination.
+      this.itemForm.target_link = this.resolveTopicTargetLink() || this.itemForm.target_link;
+      this.formOpen = true;
+      this.targetReadonly = true;
+    },
+
+    toggleFollowLatest() {
+      this.itemForm.follow_latest = !this.itemForm.follow_latest;
+      if (this.itemForm.follow_latest) {
+        if (String(this.itemForm.source_end_link || '').trim()) {
+          this.itemForm.source_end_link = '';
+          this.notice = {type:'ok', text:'Đã xoá Link kết thúc để chuyển sang Auto follow latest.'};
+        }
+      }
+    },
+
+    onSourceEndInput(value) {
+      this.itemForm.source_end_link = value;
+      if (this.itemForm.follow_latest && String(value || '').trim()) {
+        this.itemForm.source_end_link = '';
+        this.notice = {type:'ok', text:'Auto follow latest đang bật nên Link kết thúc đã được xoá tự động.'};
+      }
+    },
+
+    toggleItemTools(itemId) {
+      const iid = Number(itemId || 0);
+      this.openItemToolsId = (this.openItemToolsId === iid) ? 0 : iid;
+    },
+
+    topicState(t) {
+      const total = Number(t?.total_items || 0);
+      const done = Number(t?.done_items || 0);
+      const err = Number(t?.error_count || 0);
+      if (total > 0 && done >= total && err <= 0) return 'done';
+      if ((t?.is_running_topic || false) === true) return 'running';
+      if (err > 0) return 'error';
+      if (total > done) return 'pending';
+      return 'all';
+    },
+
+    filteredTopics() {
+      const q = String(this.topicSearch || '').trim().toLowerCase();
+      return (this.topics || []).filter((t) => {
+        const name = String(t?.name || '').toLowerCase();
+        const key = String(t?.source_topic_id || '');
+        const matchQ = !q || name.includes(q) || key.includes(q);
+        if (!matchQ) return false;
+        if (this.topicFilter === 'all') return true;
+        return this.topicState(t) === this.topicFilter;
+      }).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+    },
+
+    async saveItem() {
+      if (!this.activeGroup || !this.selectedTopic) return alert('Chọn topic trước');
+      if (!String(this.itemForm.target_link || '').trim()) {
+        this.notice = {type:'error', text:'Thiếu kênh đích. Hãy chọn topic lại hoặc bấm Sửa tay để nhập target_link.'};
+        return;
+      }
+      if (this.itemForm.follow_latest) this.itemForm.source_end_link = '';
+      const method = this.editingItemId ? 'PUT' : 'POST';
+      const url = this.editingItemId
+        ? `/api/content_hub/items/${this.editingItemId}`
+        : `/api/content_hub/items/${this.activeGroup.id}/${this.selectedTopic.id}`;
+      const res = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.itemForm)});
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) return alert(out.error || 'Không lưu được nội dung');
+      this.notice = {type:'ok', text:'Đã lưu nội dung. Bấm Chạy 1 để chạy một nhịp hoặc Chạy hết để chạy liên tục cho campaign này.'};
+      await this.selectTopic(this.selectedTopic);
+      this.resetItemForm();
+      this.formOpen = false;
+      await this.refreshAll();
+    },
+
+    async deleteItem(itemId) {
+      if (!confirm('Xoá item này?')) return;
+      await fetch(`/api/content_hub/items/${itemId}`, {method:'DELETE'});
+      if (Number(this.logItemId) === Number(itemId)) {
+        this.logItemId = 0;
+        this.itemLogs = [];
+      }
+      await this.selectTopic(this.selectedTopic);
+      await this.refreshAll();
+    },
+
+    async runItem(itemId) {
+      await fetch(`/api/content_hub/run_item/${itemId}`, {method:'POST'});
+      await this.viewItemLog(itemId);
+      if (this.selectedTopic) await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async runItemFull(itemId) {
+      await fetch(`/api/content_hub/run_item_full/${itemId}`, {method:'POST'});
+      await this.viewItemLog(itemId);
+      if (this.selectedTopic) await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async stopItem(itemId) {
+      await fetch(`/api/content_hub/stop_item/${itemId}`, {method:'POST'});
+      await this.viewItemLog(itemId);
+      if (this.selectedTopic) await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async resetItem(itemId) {
+      if (!confirm('Reset campaign này để chạy lại từ đầu?')) return;
+      const res = await fetch(`/api/content_hub/reset_item/${itemId}`, {method:'POST'});
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) {
+        this.notice = {type:'error', text: out.error || 'Không reset được campaign.'};
+        return;
+      }
+      this.notice = {type:'ok', text:'Đã reset campaign, có thể bấm Chạy để chạy lại từ đầu.'};
+      await this.viewItemLog(itemId);
+      if (this.selectedTopic) await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async runTopic(topicId) {
+      const res = await fetch(`/api/content_hub/run_topic/${topicId}`, {method:'POST'});
+      const out = await res.json().catch(()=>({}));
+      if (!res.ok || out.error) {
+        this.notice = {type:'error', text: out.error || 'Không chạy được topic.'};
+      } else {
+        const msg = `Topic: tổng ${out.total||0} item, bật ${out.enabled||0}, đã xếp hàng ${out.queued||0}, đang chạy ${out.skipped_running||0}, đã chờ sẵn ${out.skipped_queued||0}, đang tắt ${out.skipped_disabled||0}.`;
+        this.notice = {type:'ok', text: msg};
+      }
+      if (this.selectedTopic) await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async stopAllInTopic() {
+      if (!this.selectedTopic) return;
+      for (const it of (this.items || [])) {
+        await fetch(`/api/content_hub/stop_item/${it.id}`, {method:'POST'});
+      }
+      this.notice = {type:'ok', text:`Đã dừng toàn bộ ${this.items.length} campaign trong topic.`};
+      await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async resetErrorsInTopic() {
+      if (!this.selectedTopic) return;
+      const errs = (this.items || []).filter(it => String(it?.status || '') === 'Lỗi');
+      for (const it of errs) {
+        await fetch(`/api/content_hub/reset_item/${it.id}`, {method:'POST'});
+      }
+      this.notice = {type:'ok', text:`Đã reset ${errs.length} campaign lỗi trong topic.`};
+      await this.selectTopic(this.selectedTopic);
+      await this.refreshLight();
+    },
+
+    async viewItemLog(itemId) {
+      this.logItemId = Number(itemId || 0);
+      if (!this.logItemId) { this.itemLogs = []; return; }
+      this.showCampaignLogs = true;
+      const r = await fetch(`/api/content_hub/events/${this.logItemId}?limit=80`, {cache:'no-store'});
+      this.itemLogs = r.ok ? await r.json() : [];
+    },
+
+    campaignStats() {
+      const total = Array.isArray(this.items) ? this.items.length : 0;
+      const done = (this.items || []).filter(it => String(it?.status || '') === 'Đã gửi Telegram').length;
+      const remaining = Math.max(0, total - done);
+      return { total, done, remaining };
+    },
+  }));
+});
+</script>

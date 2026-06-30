@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: content-hub-only
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: TELEVAULT_DB_PATH
+        value: /tmp/content_hub.db
+      - key: DATABASE_MODE
+        value: sqlite
