@@ -5,6 +5,7 @@
             <div class="workspace-subtitle">Topic đang chọn: <span class="font-semibold text-slate-800" x-text="selectedTopic?.name || 'Chưa chọn topic'"></span></div>
         </div>
         <div class="flex items-center gap-2">
+            <span class="admin-chip">Items <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px]" x-text="items.length"></span></span>
             <button x-show="selectedTopic" @click="runTopic(selectedTopic.id)" class="h-8 px-3 rounded-lg bg-emerald-600 text-[10px] text-white">Chạy topic</button>
             <button x-show="selectedTopic" @click="stopAllInTopic()" class="h-8 px-3 rounded-lg bg-amber-500 text-[10px] text-white">Dừng topic</button>
             <button x-show="selectedTopic" @click="resetErrorsInTopic()" class="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[10px] text-slate-700">Reset lỗi</button>

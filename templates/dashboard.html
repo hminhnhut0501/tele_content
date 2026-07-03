@@ -28,23 +28,43 @@
 
         <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-6 xl:col-span-3 metric-card">
-                <div class="metric-label">Groups</div>
-                <div class="metric-value" x-text="appStatus.storage?.groups || 0"></div>
+                <div class="metric-head">
+                    <div>
+                        <div class="metric-label">Groups</div>
+                        <div class="metric-value" x-text="appStatus.storage?.groups || 0"></div>
+                    </div>
+                    <div class="metric-badge metric-badge--blue"><span>◌</span></div>
+                </div>
                 <div class="metric-note">Workspace nguồn đã tạo</div>
             </div>
             <div class="col-span-12 md:col-span-6 xl:col-span-3 metric-card">
-                <div class="metric-label">Topics</div>
-                <div class="metric-value text-cyan-300" x-text="appStatus.storage?.topics || 0"></div>
+                <div class="metric-head">
+                    <div>
+                        <div class="metric-label">Topics</div>
+                        <div class="metric-value text-sky-600" x-text="appStatus.storage?.topics || 0"></div>
+                    </div>
+                    <div class="metric-badge metric-badge--sky"><span>◌</span></div>
+                </div>
                 <div class="metric-note">Mini-workspace theo topic</div>
             </div>
             <div class="col-span-12 md:col-span-6 xl:col-span-3 metric-card">
-                <div class="metric-label">Campaigns</div>
-                <div class="metric-value text-emerald-300" x-text="appStatus.storage?.items || 0"></div>
+                <div class="metric-head">
+                    <div>
+                        <div class="metric-label">Campaigns</div>
+                        <div class="metric-value text-emerald-600" x-text="appStatus.storage?.items || 0"></div>
+                    </div>
+                    <div class="metric-badge metric-badge--green"><span>◌</span></div>
+                </div>
                 <div class="metric-note">Campaign con đang lưu</div>
             </div>
             <div class="col-span-12 md:col-span-6 xl:col-span-3 metric-card">
-                <div class="metric-label">Events</div>
-                <div class="metric-value text-amber-300" x-text="appStatus.storage?.events || 0"></div>
+                <div class="metric-head">
+                    <div>
+                        <div class="metric-label">Events</div>
+                        <div class="metric-value text-amber-500" x-text="appStatus.storage?.events || 0"></div>
+                    </div>
+                    <div class="metric-badge metric-badge--amber"><span>◌</span></div>
+                </div>
                 <div class="metric-note">Log runtime hiện có</div>
             </div>
         </div>

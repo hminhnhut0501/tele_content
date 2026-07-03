@@ -30,6 +30,7 @@
                 <span class="admin-chip">FastAPI</span>
                 <span class="admin-chip" :class="appStatus.database_url_set ? 'admin-chip--ok' : ''" x-text="appStatus.database_url_set ? 'Supabase Ready' : 'SQLite Mode'"></span>
                 <span class="admin-chip" :class="appStatus.string_session ? 'admin-chip--ok' : 'admin-chip--warn'" x-text="appStatus.string_session ? 'TG Session Ready' : 'TG Session Missing'"></span>
+                <button @click="refreshStatus()" class="admin-chip admin-chip--action">Tải lại</button>
             </div>
         </header>
 
@@ -43,6 +44,8 @@
                             <div class="sidebar__sub">prive_bot inspired UI</div>
                         </div>
                     </div>
+
+                    <div class="sidebar-group-label">Vận hành</div>
 
                     <nav class="sidebar-nav">
                         <button @click="go('dashboard')" :class="activeView === 'dashboard' ? 'sidebar-tab active' : 'sidebar-tab'">

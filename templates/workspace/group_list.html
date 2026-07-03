@@ -6,6 +6,9 @@
                 <div class="workspace-subtitle">Queue: <span class="font-semibold text-slate-700" x-text="queue.queue_size"></span> · Worker: <span class="font-semibold text-slate-700" x-text="queue.active_workers + '/' + queue.max_concurrency"></span></div>
             </div>
         </div>
+        <div class="flex items-center gap-2">
+            <span class="admin-chip">Groups <span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px]" x-text="groups.length"></span></span>
+        </div>
     </div>
     <div class="workspace-surface__body flex-1 overflow-y-auto custom-scroll space-y-3">
         <template x-for="g in groups" :key="g.id">
@@ -34,6 +37,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
+                    <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold text-slate-600" x-text="(g.topic_count || 0) + ' topics'"></span>
                     <button @click="openGroup(g)" class="h-8 px-3.5 rounded-xl bg-sky-600 text-white text-[11px] font-semibold shadow-sm shadow-sky-950/30">Mở</button>
                     <button @click="deleteGroup(g.id)" class="h-8 px-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-[11px] font-semibold">Xoá</button>
                 </div>
