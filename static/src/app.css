@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --panel: rgba(13, 18, 36, 0.78);
+    --line: rgba(98, 113, 150, 0.22);
+    --accent: #22d3ee;
+    --accent-2: #0ea5e9;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), transparent 22rem),
+      radial-gradient(circle at 80% 10%, rgba(34, 211, 238, 0.12), transparent 18rem),
+      linear-gradient(180deg, #050816 0%, #08111f 50%, #050816 100%);
+    color: #d9e4f4;
+    font-family: Inter, sans-serif;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(79, 93, 131, 0.5);
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(79, 93, 131, 0.5) transparent;
+  }
+
+  .shell {
+    @apply h-screen p-3 lg:p-[18px];
+  }
+
+  .shell-grid {
+    @apply grid h-full grid-cols-1 gap-3 xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-[18px];
+  }
+
+  .app-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 80px rgba(2, 8, 23, 0.34);
+    backdrop-filter: blur(18px);
+  }
+
+  .workspace-panel {
+    background: linear-gradient(180deg, rgba(10, 14, 29, 0.92), rgba(7, 10, 24, 0.92));
+    border: 1px solid rgba(67, 80, 115, 0.28);
+    box-shadow: 0 30px 100px rgba(2, 8, 23, 0.48);
+  }
+
+  .tool-card {
+    @apply overflow-hidden rounded-[24px];
+  }
+
+  .input-new {
+    @apply w-full rounded-[14px] border px-[14px] py-[10px] text-[13px] text-slate-200 outline-none transition placeholder:text-slate-500 focus:ring-4 focus:ring-cyan-400/10;
+    background: rgba(5, 8, 22, 0.58);
+    border-color: rgba(84, 98, 136, 0.4);
+  }
+
+  .input-new:focus {
+    border-color: rgba(34, 211, 238, 0.65);
+    background: rgba(8, 12, 28, 0.86);
+  }
+
+  .btn-primary {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[14px] border-0 px-[18px] text-[13px] font-extrabold text-slate-950 transition disabled:cursor-not-allowed disabled:opacity-60;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    box-shadow: 0 18px 35px rgba(8, 145, 178, 0.22);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-[11px] py-[7px] text-[11px] font-bold;
+    border-color: rgba(98, 113, 150, 0.22);
+    background: rgba(15, 21, 41, 0.72);
+    color: #c5d0e5;
+  }
+
+  .dot {
+    @apply h-[7px] w-[7px] rounded-full bg-cyan-400;
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.6);
+  }
+
+  .tool-badge {
+    @apply border-cyan-400/20 bg-cyan-400/10 text-cyan-100;
+  }
+
+  .nav-link {
+    @apply flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition;
+  }
+
+  .nav-link-active {
+    @apply border-cyan-400/25 bg-cyan-400/10 text-white shadow-glow;
+  }
+
+  .nav-link-idle {
+    @apply border-white/5 text-slate-300 hover:border-slate-600/60 hover:text-white;
+    background: rgba(11, 16, 34, 0.7);
+  }
+
+  .nav-hint {
+    @apply text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .quick-action {
+    @apply flex w-full items-center justify-center rounded-xl border border-slate-700/80 bg-slate-950/35 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-400/25 hover:text-white;
+  }
+
+  .metric-card {
+    @apply rounded-3xl border border-slate-800/90 bg-slate-950/35 p-5;
+  }
+
+  .metric-label {
+    @apply text-[10px] font-black uppercase tracking-[0.24em] text-slate-500;
+  }
+
+  .metric-value {
+    @apply mt-3 text-4xl font-black text-white;
+  }
+
+  .metric-note {
+    @apply mt-2 text-xs text-slate-500;
+  }
+
+  .panel-section {
+    @apply rounded-3xl border border-slate-800/90 p-5;
+    background: rgba(2, 6, 23, 0.28);
+  }
+
+  .panel-title-row {
+    @apply flex flex-wrap items-start justify-between gap-3;
+  }
+
+  .panel-kicker {
+    @apply text-[10px] font-black uppercase tracking-[0.24em] text-slate-500;
+  }
+
+  .panel-title {
+    @apply mt-1 text-xl font-black tracking-tight text-white;
+  }
+
+  .ghost-button {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-700/80 bg-slate-950/35 px-3 py-2 text-[11px] font-semibold text-slate-200 transition hover:border-cyan-400/25 hover:text-white;
+  }
+
+  .status-tile {
+    @apply rounded-2xl border border-white/5 bg-slate-950/35 p-4;
+  }
+
+  .status-head {
+    @apply text-[10px] font-black uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .status-value {
+    @apply mt-3 text-base font-bold text-white;
+  }
+
+  .status-desc {
+    @apply mt-2 text-xs leading-6 text-slate-400;
+  }
+
+  .roadmap-step {
+    @apply flex items-start gap-3 rounded-2xl border border-white/5 bg-slate-950/35 p-3;
+  }
+
+  .roadmap-index {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-400/10 text-sm font-black text-cyan-300;
+  }
+
+  .roadmap-title {
+    @apply text-sm font-bold text-white;
+  }
+
+  .roadmap-copy {
+    @apply mt-1 text-xs leading-6 text-slate-400;
+  }
+
+  .check-row {
+    @apply flex items-center justify-between gap-3 rounded-2xl border border-white/5 bg-slate-950/35 px-4 py-3;
+  }
+
+  .check-label {
+    @apply text-sm text-slate-200;
+  }
+
+  .check-badge {
+    @apply rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em];
+  }
+
+  .check-badge-ok {
+    @apply border-emerald-500/25 bg-emerald-500/10 text-emerald-300;
+  }
+
+  .check-badge-warn {
+    @apply border-amber-500/25 bg-amber-500/10 text-amber-300;
+  }
+
+  .status-code {
+    @apply mt-3 rounded-xl border border-slate-700/70 bg-slate-950/55 px-3 py-2 font-mono text-xs text-cyan-300;
+  }
+}

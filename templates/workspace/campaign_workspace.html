@@ -1,0 +1,18 @@
+<section class="col-span-12 xl:col-span-8 rounded-2xl border border-slate-800/90 bg-slate-900/30 overflow-hidden flex flex-col min-h-0">
+    <div class="p-3 border-b border-slate-800/90 bg-slate-950/25 flex items-center justify-between gap-3">
+        <div>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.14em]">Right Campaign Workspace</div>
+            <div class="text-[11px] text-slate-500 mt-1">Topic đang chọn: <span class="text-white font-semibold" x-text="selectedTopic?.name || 'Chưa chọn topic'"></span></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button x-show="selectedTopic" @click="runTopic(selectedTopic.id)" class="h-8 px-3 rounded-lg bg-emerald-700 text-[10px] text-white">Chạy topic</button>
+            <button x-show="selectedTopic" @click="stopAllInTopic()" class="h-8 px-3 rounded-lg bg-amber-700 text-[10px] text-white">Dừng topic</button>
+            <button x-show="selectedTopic" @click="resetErrorsInTopic()" class="h-8 px-3 rounded-lg bg-slate-700 text-[10px] text-white">Reset lỗi</button>
+            <button x-show="selectedTopic" @click="openCreateForm()" class="h-8 px-3 rounded-lg bg-emerald-600 text-white text-[11px] font-semibold">+ Thêm nội dung</button>
+        </div>
+    </div>
+
+    {% include 'workspace/campaign_table.html' %}
+    {% include 'workspace/campaign_form.html' %}
+    {% include 'workspace/campaign_logs.html' %}
+</section>

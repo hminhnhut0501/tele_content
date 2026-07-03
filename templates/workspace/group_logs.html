@@ -1,0 +1,17 @@
+<template x-if="showGroupLogs">
+    <div class="rounded-2xl border border-slate-800/90 bg-slate-900/28 p-3 max-h-40 overflow-y-auto custom-scroll">
+        <div class="text-[11px] font-semibold text-slate-400 mb-2">Log Group</div>
+        <template x-for="e in groupLogs" :key="e.id">
+            <div class="text-[11px] border border-slate-800 rounded px-2 py-1 mb-1 bg-slate-950/40">
+                <span class="text-slate-500" x-text="new Date((e.created_at||0)*1000).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false })"></span>
+                <span class="mx-1">·</span>
+                <span :class="e.level==='error' ? 'text-rose-300' : e.level==='ok' ? 'text-emerald-300' : 'text-cyan-300'" x-text="e.code"></span>
+                <span class="mx-1">·</span>
+                <span class="text-slate-300" x-text="e.message"></span>
+            </div>
+        </template>
+        <div x-show="!groupLogs.length" class="rounded-xl border border-dashed border-slate-700/80 bg-slate-950/35 px-3 py-2 text-[11px] text-slate-500">
+            Chưa có log group. Khi auto-run, queue hoặc scheduler chạm vào group này, log điều phối sẽ hiện ở đây.
+        </div>
+    </div>
+</template>

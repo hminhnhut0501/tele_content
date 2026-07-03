@@ -3,57 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Hub Only</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <title>Tele Content Hub</title>
+    <link rel="icon" href="data:,">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        primary: {
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                        },
-                    }
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        [x-cloak] { display: none !important; }
-        body { @apply bg-slate-950 text-slate-300 font-sans; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { @apply bg-slate-800 rounded-full border-2 border-slate-950; }
-        .input-new { @apply w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none transition-all duration-200 focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10 placeholder:text-slate-600; }
-        .btn-primary { @apply px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary-900/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ request.url_for('static', path='dist/app.css') }}">
+    <script defer src="{{ request.url_for('static', path='js/app-shell.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='vendor/alpine.min.js') }}"></script>
 </head>
-<body x-data="{ activeTab: 'content_hub' }" class="overflow-hidden h-screen">
-    <div class="h-screen flex flex-col">
-        <header class="h-16 border-b border-slate-800/60 flex items-center justify-between px-6 bg-slate-950/90">
-            <div>
-                <h1 class="text-lg font-black text-white tracking-tight">Content Hub Only</h1>
-                <p class="text-[11px] text-slate-500">Bản tối giản cho Render free, chỉ giữ module nuôi kênh.</p>
-            </div>
-            <div class="flex items-center gap-3 text-[11px]">
-                <span class="px-3 py-1 rounded-full border border-emerald-700/40 bg-emerald-500/10 text-emerald-300">Render-ready</span>
-                <a href="/healthz" target="_blank" class="px-3 py-1 rounded-full border border-slate-700 text-slate-300 hover:text-white">healthz</a>
-            </div>
-        </header>
-        <main class="flex-1 overflow-hidden p-4 sm:p-6">
-            {% include 'tab_content_hub.html' %}
-        </main>
+<body x-data="appShell()" x-init="init()">
+    <div class="shell">
+        <div class="shell-grid">
+            <aside class="app-panel rounded-[28px] px-5 py-5 overflow-hidden">
+                <div class="flex h-full flex-col">
+                    <div>
+                        <div class="chip tool-badge">
+                            <span class="dot"></span>
+                            Standalone Tool
+                        </div>
+                        <div class="mt-5">
+                            <div class="font-display text-4xl font-bold tracking-tight text-white">Tele Content</div>
+                            <div class="mt-2 max-w-[22rem] text-sm leading-6 text-slate-400">
+                                Tool nuôi kênh Telegram tập trung vào content hub: quản lý group, topic, campaign và lịch chạy trong một workspace riêng.
+                            </div>
+                        </div>
+                    </div>
+
+                    <nav class="mt-6 space-y-2">
+                        <button @click="go('dashboard')" :class="activeView === 'dashboard' ? 'nav-link-active' : 'nav-link-idle'" class="nav-link">
+                            <span>Dashboard</span>
+                            <span class="nav-hint">Tổng quan</span>
+                        </button>
+                        <button @click="go('workspace')" :class="activeView === 'workspace' ? 'nav-link-active' : 'nav-link-idle'" class="nav-link">
+                            <span>Workspace</span>
+                            <span class="nav-hint">Vận hành</span>
+                        </button>
+                        <button @click="go('settings')" :class="activeView === 'settings' ? 'nav-link-active' : 'nav-link-idle'" class="nav-link">
+                            <span>Settings</span>
+                            <span class="nav-hint">Deploy</span>
+                        </button>
+                    </nav>
+
+                    <div class="mt-6 space-y-3">
+                        <div class="rounded-2xl border border-white/5 bg-ink-925/80 p-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">App health</div>
+                                    <div class="mt-2 text-sm font-semibold text-white" x-text="appStatus.ok ? 'Sẵn sàng' : 'Cần kiểm tra'"></div>
+                                </div>
+                                <span class="chip" :class="appStatus.ok ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/25 bg-rose-500/10 text-rose-300'">
+                                    <span class="dot" :class="appStatus.ok ? 'bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.65)]' : 'bg-rose-400 shadow-[0_0_14px_rgba(251,113,133,0.65)]'"></span>
+                                    <span x-text="appStatus.ok ? 'OK' : 'Issue'"></span>
+                                </span>
+                            </div>
+                            <div class="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                                <div class="rounded-xl border border-white/5 bg-slate-950/35 px-3 py-2">
+                                    DB: <span class="font-semibold text-cyan-300" x-text="(appStatus.db_mode || 'sqlite').toUpperCase()"></span>
+                                </div>
+                                <div class="rounded-xl border border-white/5 bg-slate-950/35 px-3 py-2">
+                                    Session: <span class="font-semibold" :class="appStatus.string_session ? 'text-emerald-300' : 'text-amber-300'" x-text="appStatus.string_session ? 'READY' : 'MISSING'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-white/5 bg-ink-925/80 p-4">
+                            <div class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Quick actions</div>
+                            <div class="mt-3 space-y-2">
+                                <button @click="go('workspace')" class="quick-action">Mở workspace vận hành</button>
+                                <button @click="go('settings')" class="quick-action">Kiểm tra cấu hình Render / Supabase</button>
+                                <a href="/healthz" target="_blank" class="quick-action block text-center">Mở `/healthz`</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto rounded-2xl border border-white/5 bg-gradient-to-br from-cyan-500/10 via-ink-925/80 to-ink-925/80 p-4">
+                        <div class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Product direction</div>
+                        <div class="mt-3 text-sm leading-6 text-slate-300">
+                            Bản này đã được chuẩn hoá theo hướng app độc lập: có shell riêng, asset local, health/status riêng và sẵn đường nâng cấp sang Supabase + TG string session.
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="workspace-panel tool-card flex min-h-0 flex-col overflow-hidden">
+                <header class="border-b border-white/5 px-6 py-4">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Tele Content Hub</div>
+                            <div class="mt-2 text-2xl font-black tracking-tight text-white" x-text="viewMeta[activeView]?.title || 'Content Hub Workspace'"></div>
+                            <div class="mt-1 text-sm text-slate-400" x-text="viewMeta[activeView]?.description || ''"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="chip"><span class="dot"></span>FastAPI</span>
+                            <span class="chip" :class="appStatus.database_url_set ? 'text-emerald-300 border-emerald-500/25 bg-emerald-500/10' : ''" x-text="appStatus.database_url_set ? 'Supabase Ready' : 'SQLite Mode'"></span>
+                            <span class="chip" :class="appStatus.string_session ? 'text-emerald-300 border-emerald-500/25 bg-emerald-500/10' : 'text-amber-300 border-amber-500/25 bg-amber-500/10'" x-text="appStatus.string_session ? 'TG Session Ready' : 'TG Session Missing'"></span>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="min-h-0 flex-1 overflow-hidden p-4 sm:p-5">
+                    {% include 'dashboard.html' %}
+                    {% include 'tab_content_hub.html' %}
+                    {% include 'settings.html' %}
+                </section>
+            </main>
+        </div>
     </div>
 </body>
 </html>

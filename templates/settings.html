@@ -1,0 +1,82 @@
+<section x-show="activeView === 'settings'" x-cloak class="h-full overflow-y-auto custom-scroll" x-transition.opacity>
+    <div class="space-y-4">
+        <div class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 xl:col-span-7 panel-section">
+                <div class="panel-title-row">
+                    <div>
+                        <div class="panel-kicker">Runtime Settings</div>
+                        <div class="panel-title">Kiểm tra cấu hình app và deploy</div>
+                    </div>
+                    <button @click="refreshStatus()" class="ghost-button">Làm mới</button>
+                </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="status-tile">
+                        <div class="status-head">Database mode</div>
+                        <div class="status-value" x-text="(appStatus.db_mode || 'sqlite').toUpperCase()"></div>
+                        <div class="status-desc" x-text="appStatus.database_url_set ? 'Đang sẵn cho Supabase/Postgres.' : 'Chưa có DATABASE_URL, đang chạy SQLite.'"></div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-head">TG API credentials</div>
+                        <div class="status-value" :class="appStatus.tg_api_id_set && appStatus.tg_api_hash_set ? 'text-emerald-300' : 'text-amber-300'" x-text="appStatus.tg_api_id_set && appStatus.tg_api_hash_set ? 'READY' : 'MISSING'"></div>
+                        <div class="status-desc">Cần `TG_API_ID` và `TG_API_HASH` để client Telegram hoạt động ổn.</div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-head">String session</div>
+                        <div class="status-value" :class="appStatus.string_session ? 'text-emerald-300' : 'text-amber-300'" x-text="appStatus.string_session ? 'READY' : 'MISSING'"></div>
+                        <div class="status-desc">Nên bật để không phụ thuộc file `.session` trên máy local.</div>
+                    </div>
+                    <div class="status-tile">
+                        <div class="status-head">Render URL</div>
+                        <div class="status-value truncate" x-text="appStatus.render_external_url || 'Chưa có khi chạy local'"></div>
+                        <div class="status-desc">Khi deploy trên Render, dùng URL này làm đích ping hoặc kiểm tra health.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 xl:col-span-5 panel-section">
+                <div class="panel-kicker">Deploy Checklist</div>
+                <div class="panel-title">Checklist tối thiểu để chạy bền hơn</div>
+                <div class="mt-4 space-y-2 text-sm text-slate-300">
+                    <div class="check-row">
+                        <span class="check-label">1. `TG_API_ID` + `TG_API_HASH`</span>
+                        <span class="check-badge" :class="appStatus.tg_api_id_set && appStatus.tg_api_hash_set ? 'check-badge-ok' : 'check-badge-warn'" x-text="appStatus.tg_api_id_set && appStatus.tg_api_hash_set ? 'OK' : 'Cần thêm'"></span>
+                    </div>
+                    <div class="check-row">
+                        <span class="check-label">2. `TG_STRING_SESSION`</span>
+                        <span class="check-badge" :class="appStatus.string_session ? 'check-badge-ok' : 'check-badge-warn'" x-text="appStatus.string_session ? 'OK' : 'Cần thêm'"></span>
+                    </div>
+                    <div class="check-row">
+                        <span class="check-label">3. `DATABASE_URL` cho Supabase</span>
+                        <span class="check-badge" :class="appStatus.database_url_set ? 'check-badge-ok' : 'check-badge-warn'" x-text="appStatus.database_url_set ? 'OK' : 'Khuyên dùng'"></span>
+                    </div>
+                    <div class="check-row">
+                        <span class="check-label">4. Cron ping `/healthz`</span>
+                        <span class="check-badge check-badge-warn">Thiết lập ngoài app</span>
+                    </div>
+                </div>
+                <div class="mt-4 rounded-2xl border border-dashed border-slate-700/80 bg-slate-950/35 p-4 text-xs leading-6 text-slate-400">
+                    App này đã được làm sạch để có thể lên Render như một tool riêng. Bước tiếp theo để chạy bền là chuyển storage sang Supabase và giữ session bằng string thay vì file.
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-kicker">Runbook</div>
+            <div class="panel-title">Lệnh và đường dẫn quan trọng</div>
+            <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div class="status-tile">
+                    <div class="status-head">Local run</div>
+                    <div class="status-code">uvicorn main:app --reload --port 8000</div>
+                </div>
+                <div class="status-tile">
+                    <div class="status-head">Build CSS</div>
+                    <div class="status-code">npm run build:assets</div>
+                </div>
+                <div class="status-tile">
+                    <div class="status-head">Health endpoint</div>
+                    <div class="status-code">GET /healthz</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

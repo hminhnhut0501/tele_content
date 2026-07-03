@@ -1,0 +1,96 @@
+<div x-show="!formOpen" class="flex-1 min-h-0 flex flex-col">
+    <div class="px-3 py-2 border-b border-slate-800/90 flex items-center justify-between gap-2">
+        <div class="text-[10px] text-slate-500">
+            Bấm chạy ngay tại topic đang chọn để đẩy toàn bộ campaign con đang bật.
+        </div>
+        <div class="flex items-center gap-2">
+            <button x-show="logItemId" @click="showCampaignLogs = !showCampaignLogs" class="h-7 px-2.5 rounded border border-slate-700 text-slate-300 text-[10px] font-semibold" x-text="showCampaignLogs ? 'Ẩn log' : 'Xem log'"></button>
+        </div>
+    </div>
+    <div class="flex-1 min-h-0 overflow-y-auto custom-scroll">
+        <table class="w-full text-[11px]">
+            <thead class="bg-slate-950/78 sticky top-0 z-10 backdrop-blur">
+                <tr class="text-slate-400">
+                    <th class="text-left px-3 py-2">Campaign</th>
+                    <th class="text-left px-3 py-2">Trạng thái</th>
+                    <th class="text-left px-3 py-2">Tiến trình</th>
+                    <th class="text-left px-3 py-2">Cursor</th>
+                    <th class="text-left px-3 py-2">Queue</th>
+                    <th class="text-right px-3 py-2">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="it in items" :key="it.id">
+                    <tr class="border-t border-slate-800/90 hover:bg-slate-950/20">
+                        <td class="px-3 py-3 text-white align-top">
+                            <div class="font-semibold" x-text="it.title || ('Campaign #' + it.id)"></div>
+                            <div class="mt-1 text-[10px] text-slate-500" x-text="'Target ' + (it.target_link || '-')"></div>
+                        </td>
+                        <td class="px-3 py-3 text-slate-300 align-top">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span x-show="String(it.status || '') === 'Running one-shot'" class="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 font-semibold">One-shot</span>
+                                <span x-show="String(it.status || '') === 'Running full'" class="px-2 py-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 font-semibold">Run until empty</span>
+                                <span x-show="!['Running one-shot','Running full'].includes(String(it.status || ''))" x-text="it.status || 'Nháp'"></span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 text-slate-300 align-top">
+                            <span x-text="'Msg ' + Number(it.sent_count || 0)"></span>
+                            <span class="mx-1">·</span>
+                            <span x-text="'Unit ' + Number(it.sent_units_count || 0)"></span>
+                            <span x-show="Number(it.batch_size || 0) > 0" x-text="' / Lô ' + Number(it.batch_size || 0)"></span>
+                        </td>
+                        <td class="px-3 py-3 text-slate-300 align-top">
+                            <div class="flex flex-wrap items-center gap-1">
+                                <span class="font-mono text-cyan-300" x-text="Number(it.last_msg_id || 0) || '-'"></span>
+                                <span x-show="Number(it.last_msg_id || 0) > 0" class="px-2 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-[10px] font-semibold" title="Cursor đang được giữ lại từ lần chạy trước, nên item này sẽ tiếp tục từ last_msg_id thay vì quét lại từ đầu">
+                                    Cursor preserved
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 text-slate-400 align-top">
+                            <div class="flex flex-wrap items-center gap-1">
+                                <span x-show="!String(it.source_end_link || '').trim()" class="px-2 py-0.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300" title="Chỉ quét từ source_start_link tới hiện tại, rồi bám cursor last_msg_id để lấy tin mới">
+                                    Auto follow latest
+                                </span>
+                                <span x-show="String(it.source_end_link || '').trim()" class="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400" title="Quét theo khoảng start/end đã nhập">
+                                    Range fixed
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400" x-text="'#' + (it.queue_position || 0) + ' · ' + (it.next_run_in_sec || 0) + 's'"></span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 align-top">
+                            <div class="flex justify-end gap-1 flex-wrap">
+                                <button @click="editItem(it)" class="h-7 px-2 rounded border border-slate-700 text-[10px] text-slate-300">Sửa</button>
+                                <button @click="runItem(it.id)" class="h-7 px-2 rounded bg-emerald-600 text-[10px] font-semibold text-white shadow-sm shadow-emerald-950/20">Chạy 1</button>
+                                <button @click="runItemFull(it.id)" class="h-7 px-2 rounded border border-cyan-500/30 bg-cyan-500/10 text-[10px] font-semibold text-cyan-300 shadow-sm shadow-cyan-950/20">Chạy hết</button>
+                                <button @click="stopItem(it.id)" class="h-7 px-2 rounded bg-amber-600 text-[10px] text-white">Dừng</button>
+                                <button @click="toggleItemTools(it.id)" class="h-7 px-2 rounded border border-slate-700 text-[10px] text-slate-300">...</button>
+                            </div>
+                            <div x-show="openItemToolsId===it.id" class="mt-1 flex justify-end gap-1 flex-wrap">
+                                <button @click="resetItem(it.id)" class="h-7 px-2 rounded bg-slate-700 text-[10px] text-white">Reset</button>
+                                <button @click="viewItemLog(it.id)" class="h-7 px-2 rounded border border-cyan-800/50 bg-cyan-500/10 text-[10px] text-cyan-300">Log</button>
+                                <button @click="deleteItem(it.id)" class="h-7 px-2 rounded bg-rose-700 text-[10px] text-white">Xoá</button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <div x-show="selectedTopic && !items.length" class="p-4">
+            <div class="rounded-2xl border border-dashed border-slate-700/80 bg-slate-950/35 p-5">
+                <div class="text-sm font-semibold text-white">Topic này chưa có campaign con</div>
+                <div class="mt-1 text-xs leading-6 text-slate-400">Bạn có thể thêm một nguồn cụ thể để repost theo khoảng, hoặc bật chế độ follow latest để topic này bám nội dung mới liên tục.</div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button @click="openCreateForm()" class="h-9 px-3 rounded-xl bg-emerald-600 text-[11px] font-semibold text-white">+ Thêm nội dung đầu tiên</button>
+                    <span class="rounded-full border border-slate-700/90 bg-slate-900/90 px-3 py-2 text-[10px] text-slate-400">Gợi ý: tạo 1 campaign `Chạy 1` trước để test luồng</span>
+                </div>
+            </div>
+        </div>
+        <div x-show="!selectedTopic" class="p-4">
+            <div class="rounded-2xl border border-dashed border-slate-700/80 bg-slate-950/35 p-5">
+                <div class="text-sm font-semibold text-white">Chưa chọn topic</div>
+                <div class="mt-1 text-xs leading-6 text-slate-400">Sidebar bên trái là nơi quản lý từng topic như từng mini-workspace. Chọn một topic để xem campaign con, queue và log chi tiết.</div>
+            </div>
+        </div>
+    </div>
+</div>

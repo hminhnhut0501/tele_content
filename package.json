@@ -1,0 +1,31 @@
+{
+  "name": "content_hub_render_free",
+  "version": "1.0.0",
+  "description": "This folder is a separate deployment target focused only on the `content hub` workflow.",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i ./static/src/app.css -o ./static/dist/app.css --minify",
+    "copy:vendor": "bash ./scripts/copy_vendor_assets.sh",
+    "build:assets": "npm run build:css && npm run copy:vendor",
+    "test": "echo \"No JS unit tests configured\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hminhnhut0501/tele_content.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hminhnhut0501/tele_content/issues"
+  },
+  "homepage": "https://github.com/hminhnhut0501/tele_content#readme",
+  "dependencies": {
+    "alpinejs": "^3.15.12",
+    "playwright": "^1.61.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
+    "tailwindcss": "^3.4.17"
+  }
+}
