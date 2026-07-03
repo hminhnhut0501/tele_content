@@ -4,3 +4,4 @@ telethon
 pydantic
 jinja2
 cryptg
+psycopg[binary]

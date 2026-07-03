@@ -9,7 +9,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: TELEVAULT_DB_PATH
-        value: /tmp/content_hub.db
       - key: DATABASE_MODE
         value: sqlite
+      - key: TELEVAULT_DB_PATH
+        value: /tmp/content_hub.db

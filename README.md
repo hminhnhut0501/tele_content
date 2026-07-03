@@ -30,13 +30,22 @@ Render free web services do not keep a persistent disk. The default SQLite file 
 
 1. Keep Render free only for the web app and UI.
 2. Use `TG_STRING_SESSION` in environment variables.
-3. Later swap the database layer to Supabase Postgres.
+3. Set `DATABASE_URL` to Supabase Postgres.
 
 This app is prepared for that direction by isolating:
 
 - `database.py` for storage wiring
 - `tg_client.py` for Telegram session handling
 - `modules/mod_content_hub.py` as the only business module
+
+The app now supports both modes:
+
+- `SQLite mode`
+  - used when `DATABASE_URL` is empty
+  - suitable for quick local testing
+- `Postgres mode`
+  - auto-enabled when `DATABASE_URL` is set
+  - intended for Supabase / Render deployment
 
 ## Local run
 
@@ -56,10 +65,19 @@ uvicorn main:app --reload --port 8000
    - `TG_API_ID`
    - `TG_API_HASH`
    - `TG_STRING_SESSION`
+   - `DATABASE_URL` for Supabase if you want durable storage
 3. Add an external cron ping to:
    - `GET /healthz`
    - every `10-14` minutes
 
-## Supabase later
+## Supabase now
 
-This folder does not switch to Supabase automatically yet. It is intentionally split so we can migrate only `database.py` next, without touching the UI or Telegram flow.
+If you set `DATABASE_URL`, the app switches to Postgres mode automatically.
+
+Recommended Supabase pooler URL format:
+
+```text
+postgresql://postgres.xxx:[password]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+```
+
+Keep `TG_STRING_SESSION` in Render environment variables so Telegram login does not depend on a local session file.

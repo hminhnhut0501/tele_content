@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from database import get_db_connection
+from database import DATABASE_MODE, DATABASE_URL, get_db_connection
 
 
 def raise_open_file_limit(min_soft_limit: int = 4096):
@@ -63,8 +63,9 @@ async def healthz():
         {
             "ok": True,
             "service": "content_hub_only",
-            "db_mode": os.getenv("DATABASE_MODE", "sqlite"),
-            "db_path": os.getenv("TELEVAULT_DB_PATH", "/tmp/content_hub.db"),
+            "db_mode": DATABASE_MODE,
+            "db_path": os.getenv("TELEVAULT_DB_PATH", "/tmp/content_hub.db") if DATABASE_MODE == "sqlite" else "",
+            "database_url_set": bool(DATABASE_URL),
             "string_session": bool(os.getenv("TG_STRING_SESSION")),
         }
     )
