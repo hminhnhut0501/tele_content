@@ -1,0 +1,51 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-3981a3d1f3561bd8.js",
+      "static/chunks/main-app-91104f96ea60e281.js",
+      "static/chunks/app/_not-found/page-baed173561ecf777.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-3981a3d1f3561bd8.js",
+      "static/chunks/main-app-91104f96ea60e281.js",
+      "static/css/f76c076b5770de3a.css",
+      "static/chunks/660-16ff2867eebfe774.js",
+      "static/chunks/121-4850fb84509869cb.js",
+      "static/chunks/app/layout-69f193762d6bf0be.js"
+    ],
+    "/settings/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-3981a3d1f3561bd8.js",
+      "static/chunks/main-app-91104f96ea60e281.js",
+      "static/chunks/660-16ff2867eebfe774.js",
+      "static/chunks/711-6811547da01b6058.js",
+      "static/chunks/175-a0a243859583c82a.js",
+      "static/chunks/app/settings/page-28877c06ae682eb3.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-3981a3d1f3561bd8.js",
+      "static/chunks/main-app-91104f96ea60e281.js",
+      "static/chunks/660-16ff2867eebfe774.js",
+      "static/chunks/711-6811547da01b6058.js",
+      "static/chunks/app/login/page-9e47cd90fab8a35f.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-3981a3d1f3561bd8.js",
+      "static/chunks/main-app-91104f96ea60e281.js",
+      "static/chunks/660-16ff2867eebfe774.js",
+      "static/chunks/711-6811547da01b6058.js",
+      "static/chunks/175-a0a243859583c82a.js",
+      "static/chunks/747-c285f35033eae7ae.js",
+      "static/chunks/app/page-b1f52359e391fc10.js"
+    ]
+  }
+}

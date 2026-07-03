@@ -4,10 +4,9 @@ import os
 from contextlib import closing
 
 import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from database import CONTENT_HUB_BOOTSTRAP_ID, DATABASE_MODE, DATABASE_URL, get_db_connection, migration_applied, record_migration
 
@@ -27,23 +26,23 @@ def raise_open_file_limit(min_soft_limit: int = 4096):
 
 raise_open_file_limit()
 
-app = FastAPI(title="Content Hub Only")
-templates = Jinja2Templates(directory="templates")
+app = FastAPI(title="Content Hub API")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-db_conn = get_db_connection()
 module = importlib.import_module("modules.mod_content_hub")
 
 if hasattr(module, "router"):
     app.include_router(module.router, prefix="/api/content_hub", tags=["content_hub"])
-if hasattr(module, "init_db"):
-    module.init_db(db_conn)
-record_migration(db_conn, CONTENT_HUB_BOOTSTRAP_ID, note="Baseline schema bootstrap for content_hub_render_free")
-
-db_conn.close()
 
 
 @app.on_event("startup")
 async def startup_module_hooks():
+    db_conn = get_db_connection()
+    try:
+        if hasattr(module, "init_db"):
+            module.init_db(db_conn)
+        record_migration(db_conn, CONTENT_HUB_BOOTSTRAP_ID, note="Baseline schema bootstrap for content_hub_render_free")
+    finally:
+        db_conn.close()
     hook = getattr(module, "on_startup", None)
     if hook is None:
         return
@@ -52,13 +51,9 @@ async def startup_module_hooks():
         await result
 
 
-@app.get("/", response_class=HTMLResponse)
-async def home_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={"request": request},
-    )
+@app.get("/")
+async def home_page():
+    return RedirectResponse(url=os.getenv("ADMIN_UI_URL", "http://localhost:3000"), status_code=307)
 
 
 @app.get("/healthz")
@@ -66,7 +61,7 @@ async def healthz():
     return JSONResponse(
         {
             "ok": True,
-            "service": "content_hub_only",
+            "service": "content_hub_api",
             "db_mode": DATABASE_MODE,
             "db_path": os.getenv("TELEVAULT_DB_PATH", "/tmp/content_hub.db") if DATABASE_MODE == "sqlite" else "",
             "database_url_set": bool(DATABASE_URL),
@@ -79,7 +74,7 @@ async def healthz():
 async def app_status():
     summary = {
         "ok": True,
-        "service": "content_hub_only",
+        "service": "content_hub_api",
         "db_mode": DATABASE_MODE,
         "db_path": os.getenv("TELEVAULT_DB_PATH", "/tmp/content_hub.db") if DATABASE_MODE == "sqlite" else "",
         "database_url_set": bool(DATABASE_URL),
