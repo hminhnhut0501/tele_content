@@ -30,6 +30,11 @@
                         <div class="status-value truncate" x-text="appStatus.render_external_url || 'Chưa có khi chạy local'"></div>
                         <div class="status-desc">Khi deploy trên Render, dùng URL này làm đích ping hoặc kiểm tra health.</div>
                     </div>
+                    <div class="status-tile md:col-span-2">
+                        <div class="status-head">Schema bootstrap</div>
+                        <div class="status-value" :class="appStatus.schema_bootstrap_applied ? 'text-emerald-300' : 'text-amber-300'" x-text="appStatus.schema_bootstrap_applied ? 'APPLIED' : 'NOT APPLIED'"></div>
+                        <div class="status-desc">Baseline migration id: <span class="font-mono text-cyan-300" x-text="appStatus.schema_bootstrap_id || '-'"></span></div>
+                    </div>
                 </div>
             </div>
 
@@ -50,7 +55,11 @@
                         <span class="check-badge" :class="appStatus.database_url_set ? 'check-badge-ok' : 'check-badge-warn'" x-text="appStatus.database_url_set ? 'OK' : 'Khuyên dùng'"></span>
                     </div>
                     <div class="check-row">
-                        <span class="check-label">4. Cron ping `/healthz`</span>
+                        <span class="check-label">4. Bootstrap schema DB</span>
+                        <span class="check-badge" :class="appStatus.schema_bootstrap_applied ? 'check-badge-ok' : 'check-badge-warn'" x-text="appStatus.schema_bootstrap_applied ? 'OK' : 'Chạy bootstrap_db.py'"></span>
+                    </div>
+                    <div class="check-row">
+                        <span class="check-label">5. Cron ping `/healthz`</span>
                         <span class="check-badge check-badge-warn">Thiết lập ngoài app</span>
                     </div>
                 </div>

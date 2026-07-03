@@ -13,6 +13,7 @@ except Exception:  # pragma: no cover - optional until Postgres mode is used
 DB_PATH = Path(os.getenv("TELEVAULT_DB_PATH") or Path(__file__).parent.resolve() / "televault_v2.db")
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 DATABASE_MODE = "postgres" if DATABASE_URL else "sqlite"
+CONTENT_HUB_BOOTSTRAP_ID = "20260703_content_hub_bootstrap_v1"
 DB_WRITE_LOCK = threading.RLock()
 WRITE_SQL_PREFIXES = (
     "insert",
@@ -241,6 +242,34 @@ def get_db_connection():
     raw_conn.execute("PRAGMA synchronous=NORMAL;")
     raw_conn.execute("PRAGMA busy_timeout=120000;")
     return SerializedConnection(raw_conn)
+
+
+def ensure_schema_migrations_table(conn):
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS schema_migrations (
+            id TEXT PRIMARY KEY,
+            note TEXT DEFAULT '',
+            applied_at INTEGER DEFAULT (strftime('%s','now'))
+        )"""
+    )
+    conn.commit()
+
+
+def migration_applied(conn, migration_id: str) -> bool:
+    ensure_schema_migrations_table(conn)
+    row = conn.execute("SELECT id FROM schema_migrations WHERE id=? LIMIT 1", (migration_id,)).fetchone()
+    return bool(row)
+
+
+def record_migration(conn, migration_id: str, note: str = ""):
+    ensure_schema_migrations_table(conn)
+    if migration_applied(conn, migration_id):
+        return
+    conn.execute(
+        "INSERT INTO schema_migrations(id, note) VALUES(?, ?)",
+        (str(migration_id or "").strip(), str(note or "").strip()),
+    )
+    conn.commit()
 
 
 def init_db():

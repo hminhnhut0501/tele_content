@@ -70,7 +70,35 @@ uvicorn main:app --reload --port 8000
 - `GET /healthz`
   - lightweight ping endpoint for external cron
 - `GET /api/app/status`
-  - app mode, env readiness, storage counts
+  - app mode, env readiness, storage counts, bootstrap migration state
+
+## Database bootstrap and migration path
+
+The clear path for Supabase/Postgres is now:
+
+1. Put `DATABASE_URL` into your environment.
+2. Run the bootstrap script once:
+
+```bash
+python3 scripts/bootstrap_db.py
+```
+
+3. Verify state any time:
+
+```bash
+python3 scripts/bootstrap_db.py --check
+```
+
+What this does:
+
+- creates `schema_migrations` if missing
+- applies the current baseline Content Hub schema
+- records bootstrap id `20260703_content_hub_bootstrap_v1`
+
+The web app also reports this in `/api/app/status` through:
+
+- `schema_bootstrap_id`
+- `schema_bootstrap_applied`
 
 ## Render deploy
 
@@ -79,13 +107,15 @@ uvicorn main:app --reload --port 8000
    - `npm install && npm run build:assets && pip install -r requirements.txt`
 3. Render start command:
    - `uvicorn main:app --host 0.0.0.0 --port $PORT`
-3. Set env vars:
+4. Set env vars:
    - `TG_API_ID`
    - `TG_API_HASH`
    - `TG_STRING_SESSION`
    - `DATABASE_URL` if you want Supabase durability
    - `RENDER_EXTERNAL_URL` optional, but useful for status/debug
-4. Add an external cron ping:
+5. Bootstrap the database once against Supabase:
+   - `python3 scripts/bootstrap_db.py`
+6. Add an external cron ping:
    - `GET /healthz`
    - every `10-14` minutes
 
@@ -94,10 +124,12 @@ uvicorn main:app --reload --port 8000
 1. Create a Supabase project.
 2. Copy the pooler `DATABASE_URL`.
 3. Put `DATABASE_URL` into Render env vars.
-4. Redeploy Render so the app switches to Postgres mode automatically.
+4. Run `python3 scripts/bootstrap_db.py` against that database.
+5. Redeploy Render so the app switches to Postgres mode automatically.
 5. Open `/api/app/status` and confirm:
    - `db_mode=postgres`
    - `database_url_set=true`
+   - `schema_bootstrap_applied=true`
 
 ## Important limitation
 

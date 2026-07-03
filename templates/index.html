@@ -10,6 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ request.url_for('static', path='dist/app.css') }}">
     <script defer src="{{ request.url_for('static', path='js/app-shell.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/state.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/helpers.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/lifecycle.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/groups.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/topics.js') }}"></script>
+    <script defer src="{{ request.url_for('static', path='js/content-hub/campaigns.js') }}"></script>
     <script defer src="{{ request.url_for('static', path='js/content-hub.js') }}"></script>
     <script defer src="{{ request.url_for('static', path='vendor/alpine.min.js') }}"></script>
 </head>

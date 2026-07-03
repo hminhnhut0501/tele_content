@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from database import DATABASE_MODE, DATABASE_URL, get_db_connection
+from database import CONTENT_HUB_BOOTSTRAP_ID, DATABASE_MODE, DATABASE_URL, get_db_connection, migration_applied, record_migration
 
 
 def raise_open_file_limit(min_soft_limit: int = 4096):
@@ -37,6 +37,7 @@ if hasattr(module, "router"):
     app.include_router(module.router, prefix="/api/content_hub", tags=["content_hub"])
 if hasattr(module, "init_db"):
     module.init_db(db_conn)
+record_migration(db_conn, CONTENT_HUB_BOOTSTRAP_ID, note="Baseline schema bootstrap for content_hub_render_free")
 
 db_conn.close()
 
@@ -87,6 +88,8 @@ async def app_status():
         "tg_api_hash_set": bool(os.getenv("TG_API_HASH")),
         "render_external_url": os.getenv("RENDER_EXTERNAL_URL", "").strip(),
         "televault_reload": os.getenv("TELEVAULT_RELOAD", "0") == "1",
+        "schema_bootstrap_id": CONTENT_HUB_BOOTSTRAP_ID,
+        "schema_bootstrap_applied": False,
         "storage": {
             "groups": 0,
             "topics": 0,
@@ -96,6 +99,7 @@ async def app_status():
     }
     try:
         with closing(get_db_connection()) as conn:
+            summary["schema_bootstrap_applied"] = migration_applied(conn, CONTENT_HUB_BOOTSTRAP_ID)
             summary["storage"]["groups"] = int(conn.execute("SELECT COUNT(*) FROM content_groups").fetchone()[0] or 0)
             summary["storage"]["topics"] = int(conn.execute("SELECT COUNT(*) FROM content_topics").fetchone()[0] or 0)
             summary["storage"]["items"] = int(conn.execute("SELECT COUNT(*) FROM content_items").fetchone()[0] or 0)
