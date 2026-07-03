@@ -27,7 +27,8 @@ def raise_open_file_limit(min_soft_limit: int = 4096):
 raise_open_file_limit()
 
 app = FastAPI(title="Content Hub API")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 module = importlib.import_module("modules.mod_content_hub")
 
 if hasattr(module, "router"):
