@@ -81,10 +81,14 @@ class SerializedCursor:
         translated = translate_sql(sql)
         self._owner._before_execute(sql)
         fn = getattr(self._cursor, method_name)
-        if parameters is None:
-            fn(translated)
-        else:
-            fn(translated, parameters)
+        try:
+            if parameters is None:
+                fn(translated)
+            else:
+                fn(translated, parameters)
+        except Exception:
+            self._owner.rollback()
+            raise
         self.description = self._cursor.description
         return self
 
@@ -94,18 +98,26 @@ class SerializedCursor:
     def executemany(self, sql, seq_of_parameters):
         translated = translate_sql(sql)
         self._owner._before_execute(sql)
-        self._cursor.executemany(translated, seq_of_parameters)
+        try:
+            self._cursor.executemany(translated, seq_of_parameters)
+        except Exception:
+            self._owner.rollback()
+            raise
         self.description = self._cursor.description
         return self
 
     def executescript(self, sql_script):
         translated = translate_sql(sql_script)
         self._owner._before_execute(sql_script, force_write=True)
-        if DATABASE_MODE == "postgres":
-            for statement in [part.strip() for part in translated.split(";") if part.strip()]:
-                self._cursor.execute(statement)
-        else:
-            self._cursor.executescript(translated)
+        try:
+            if DATABASE_MODE == "postgres":
+                for statement in [part.strip() for part in translated.split(";") if part.strip()]:
+                    self._cursor.execute(statement)
+            else:
+                self._cursor.executescript(translated)
+        except Exception:
+            self._owner.rollback()
+            raise
         self.description = self._cursor.description
         return self
 
