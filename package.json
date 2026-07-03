@@ -1,0 +1,9 @@
+{
+  "name": "tele-content-root",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:assets": "echo \"No root asset build required\""
+  }
+}
