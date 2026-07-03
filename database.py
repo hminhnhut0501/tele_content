@@ -277,6 +277,3 @@ def init_db():
     conn.execute("""CREATE TABLE IF NOT EXISTS saved_targets (link TEXT PRIMARY KEY)""")
     conn.commit()
     conn.close()
-
-
-init_db()
