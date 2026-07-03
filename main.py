@@ -5,6 +5,7 @@ from contextlib import closing
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -27,6 +28,17 @@ def raise_open_file_limit(min_soft_limit: int = 4096):
 raise_open_file_limit()
 
 app = FastAPI(title="Content Hub API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        origin.strip()
+        for origin in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",")
+        if origin.strip()
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 if os.path.isdir("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 module = importlib.import_module("modules.mod_content_hub")
