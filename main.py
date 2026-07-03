@@ -54,7 +54,18 @@ async def startup_module_hooks():
 
 @app.get("/")
 async def home_page():
-    return RedirectResponse(url=os.getenv("ADMIN_UI_URL", "http://localhost:3000"), status_code=307)
+    admin_ui_url = os.getenv("ADMIN_UI_URL", "").strip()
+    if admin_ui_url:
+        return RedirectResponse(url=admin_ui_url, status_code=307)
+    return JSONResponse(
+        {
+            "ok": True,
+            "service": "content_hub_api",
+            "message": "Backend is running. Set ADMIN_UI_URL to your MUI app URL if you want root to redirect there.",
+            "render_external_url": os.getenv("RENDER_EXTERNAL_URL", "").strip(),
+            "admin_ui_url_set": False,
+        }
+    )
 
 
 @app.get("/healthz")
