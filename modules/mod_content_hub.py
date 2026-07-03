@@ -141,6 +141,7 @@ def init_db(conn):
             updated_at INTEGER DEFAULT (strftime('%s','now'))
         )"""
     )
+    conn.commit()
     try:
         conn.execute("ALTER TABLE content_topics ADD COLUMN target_link_seed TEXT DEFAULT ''")
     except Exception:
