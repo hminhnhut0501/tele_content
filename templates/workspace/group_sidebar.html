@@ -1,23 +1,26 @@
 <aside class="w-[392px] shrink-0 flex flex-col gap-5 overflow-hidden">
-    <div class="bg-slate-900/55 border border-slate-800/90 rounded-2xl flex flex-col overflow-hidden shadow-[0_20px_80px_rgba(2,8,23,0.32)] h-full">
-        <div class="p-5 border-b border-slate-800/90 bg-slate-950/35">
-            <h2 class="text-[11px] font-black text-white uppercase tracking-[0.22em]">Thêm Group</h2>
-        </div>
-        <div class="p-5 space-y-4 overflow-y-auto custom-scroll">
+    <div class="workspace-surface h-full">
+        <div class="workspace-surface__head">
             <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Tên Group</label>
+                <div class="workspace-title">Thêm group</div>
+                <div class="workspace-subtitle">Tạo workspace nguồn mới</div>
+            </div>
+        </div>
+        <div class="workspace-surface__body space-y-4 overflow-y-auto custom-scroll">
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Tên group</label>
                 <input x-ref="groupNameInput" x-model="groupForm.name" class="input-new" placeholder="VD: Prime Team">
             </div>
             <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Group ID / Source Key</label>
+                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Group ID / source key</label>
                 <input x-model="groupForm.source_key" class="input-new" placeholder="-1001234567890">
             </div>
             <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Link nguồn (tuỳ chọn)</label>
+                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Link nguồn</label>
                 <input x-model="groupForm.source_link" class="input-new" placeholder="t.me/c/...">
             </div>
             <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Kênh đích mặc định (tuỳ chọn)</label>
+                <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Kênh đích mặc định</label>
                 <input x-model="groupForm.target_link" class="input-new" placeholder="t.me/c/...">
             </div>
             <button @click="createGroup" class="btn-primary w-full h-11 rounded-xl">Lưu Group</button>
