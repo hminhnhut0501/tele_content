@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: content-hub-only
+    name: tele-content-api
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -13,3 +13,17 @@ services:
         value: sqlite
       - key: TELEVAULT_DB_PATH
         value: /tmp/content_hub.db
+
+  - type: web
+    name: tele-content-ui
+    runtime: node
+    plan: free
+    rootDir: admin-ui
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.17.0
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false
