@@ -68,16 +68,15 @@ async def home_page():
 @app.get("/admin")
 async def admin_page():
     admin_ui_url = os.getenv("ADMIN_UI_URL", "").strip()
-    if admin_ui_url:
-        return RedirectResponse(url=admin_ui_url, status_code=307)
     return JSONResponse(
         {
-            "ok": False,
+            "ok": bool(admin_ui_url),
             "service": "content_hub_api",
-            "message": "ADMIN_UI_URL is not set. Configure it to point to your MUI app URL.",
-            "admin_ui_url_set": False,
+            "message": "Admin landing page. Open the UI URL below if it is set.",
+            "admin_ui_url_set": bool(admin_ui_url),
+            "admin_ui_url": admin_ui_url or None,
         },
-        status_code=400,
+        status_code=200 if admin_ui_url else 400,
     )
 
 
