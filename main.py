@@ -54,17 +54,30 @@ async def startup_module_hooks():
 
 @app.get("/")
 async def home_page():
+    return JSONResponse(
+        {
+            "ok": True,
+            "service": "content_hub_api",
+            "message": "Backend is running. Use /admin to open the UI redirect target.",
+            "render_external_url": os.getenv("RENDER_EXTERNAL_URL", "").strip(),
+            "admin_ui_url_set": bool(os.getenv("ADMIN_UI_URL", "").strip()),
+        }
+    )
+
+
+@app.get("/admin")
+async def admin_page():
     admin_ui_url = os.getenv("ADMIN_UI_URL", "").strip()
     if admin_ui_url:
         return RedirectResponse(url=admin_ui_url, status_code=307)
     return JSONResponse(
         {
-            "ok": True,
+            "ok": False,
             "service": "content_hub_api",
-            "message": "Backend is running. Set ADMIN_UI_URL to your MUI app URL if you want root to redirect there.",
-            "render_external_url": os.getenv("RENDER_EXTERNAL_URL", "").strip(),
+            "message": "ADMIN_UI_URL is not set. Configure it to point to your MUI app URL.",
             "admin_ui_url_set": False,
-        }
+        },
+        status_code=400,
     )
 
 
