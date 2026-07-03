@@ -62,7 +62,13 @@
   }
 
   .shell {
-    @apply h-screen p-3 lg:p-[18px];
+    @apply h-screen p-3;
+  }
+
+  @media (min-width: 1024px) {
+    .shell {
+      padding: 18px;
+    }
   }
 
   .shell-grid {
