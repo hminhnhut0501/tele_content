@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "This folder is a separate deployment target focused only on the `content hub` workflow.",
   "scripts": {
-    "build:css": "tailwindcss -c tailwind.config.js -i ./static/src/app.css -o ./static/dist/app.css --minify",
+    "build:css": "node ./node_modules/tailwindcss/lib/cli.js -c tailwind.config.js -i ./static/src/app.css -o ./static/dist/app.css --minify",
     "copy:vendor": "bash ./scripts/copy_vendor_assets.sh",
     "build:assets": "npm run build:css && npm run copy:vendor",
     "test": "echo \"No JS unit tests configured\""
