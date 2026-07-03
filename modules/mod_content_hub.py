@@ -180,6 +180,7 @@ def init_db(conn):
             updated_at INTEGER DEFAULT (strftime('%s','now'))
         )"""
     )
+    conn.commit()
     try:
         conn.execute("ALTER TABLE content_items ADD COLUMN sent_units_count INTEGER DEFAULT 0")
     except Exception:
@@ -220,6 +221,7 @@ def init_db(conn):
             created_at INTEGER DEFAULT (strftime('%s','now'))
         )"""
     )
+    conn.commit()
     try:
         conn.execute("ALTER TABLE content_events ADD COLUMN group_id INTEGER DEFAULT 0")
     except Exception:
@@ -246,6 +248,7 @@ def init_db(conn):
             UNIQUE(group_id, slot_key)
         )"""
     )
+    conn.commit()
     conn.execute("CREATE INDEX IF NOT EXISTS idx_content_group_runs_group ON content_group_runs(group_id, status, created_at DESC)")
     conn.commit()
 
