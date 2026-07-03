@@ -108,6 +108,7 @@ def init_db(conn):
         )"""
     )
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_content_groups_source_key ON content_groups(source_key)")
+    conn.commit()
     for column_def in (
         "rr_cursor_topic_id INTEGER DEFAULT 0",
         "auto_enabled INTEGER DEFAULT 0",
@@ -145,6 +146,7 @@ def init_db(conn):
     except Exception:
         pass
     conn.execute("CREATE INDEX IF NOT EXISTS idx_content_topics_group ON content_topics(group_id, sort_order, id)")
+    conn.commit()
 
     conn.execute(
         """CREATE TABLE IF NOT EXISTS content_items (
@@ -202,6 +204,7 @@ def init_db(conn):
     except Exception:
         pass
     conn.execute("CREATE INDEX IF NOT EXISTS idx_content_items_topic ON content_items(topic_id, id DESC)")
+    conn.commit()
 
     conn.execute(
         """CREATE TABLE IF NOT EXISTS content_events (
@@ -222,6 +225,7 @@ def init_db(conn):
         pass
     conn.execute("CREATE INDEX IF NOT EXISTS idx_content_events_item ON content_events(item_id, id DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_content_events_group ON content_events(group_id, id DESC)")
+    conn.commit()
     conn.execute(
         """CREATE TABLE IF NOT EXISTS content_group_runs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
