@@ -1,5 +1,5 @@
-<div x-show="drawerOpen" class="fixed inset-0 z-[90] bg-slate-950/84 backdrop-blur-md p-3 sm:p-6 flex items-center justify-center" style="display:none">
-    <div @click.away="closeDrawer()" class="w-[96vw] h-[92vh] max-w-[1880px] bg-slate-950 border border-slate-800/90 shadow-[0_24px_120px_rgba(2,8,23,0.5)] flex flex-col overflow-hidden rounded-3xl">
+<div x-show="drawerOpen" class="mui-overlay" style="display:none">
+    <div @click.away="closeDrawer()" class="mui-dialog-shell">
         {% include 'workspace/drawer_header.html' %}
         {% include 'workspace/drawer_body.html' %}
     </div>

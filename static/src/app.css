@@ -109,6 +109,19 @@
     box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
   }
 
+  .mui-overlay {
+    @apply fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-6;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(14px);
+  }
+
+  .mui-dialog-shell {
+    @apply flex h-[92vh] w-[96vw] max-w-[1880px] flex-col overflow-hidden rounded-[18px] border;
+    background: rgba(255,255,255,0.92);
+    border-color: rgba(148, 163, 184, 0.22);
+    box-shadow: 0 24px 120px rgba(15, 23, 42, 0.28);
+  }
+
   .sidebar__brand {
     @apply flex items-center gap-3 px-2 py-2;
   }
@@ -260,6 +273,29 @@
     background: rgba(255, 255, 255, 0.92);
   }
 
+  .panel {
+    @apply overflow-hidden rounded-[16px] border border-slate-200 bg-white;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  }
+
+  .panel-head {
+    @apply flex items-start justify-between gap-4 border-b px-5 py-4;
+    background: linear-gradient(135deg, rgba(248,250,252,0.95) 0%, rgba(241,245,249,0.88) 100%);
+    border-color: rgba(148, 163, 184, 0.12);
+  }
+
+  .panel-head strong {
+    @apply block text-base font-extrabold tracking-[-0.02em] text-slate-900;
+  }
+
+  .panel-head .sub {
+    @apply mt-1 text-sm leading-6 text-slate-500;
+  }
+
+  .panel-actions {
+    @apply flex flex-wrap items-center justify-end gap-2;
+  }
+
   .panel-title-row {
     @apply flex flex-wrap items-start justify-between gap-3;
   }
@@ -334,5 +370,34 @@
 
   .status-code {
     @apply mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-sky-700;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th,
+  td {
+    @apply border-b border-slate-200 px-4 py-3 text-left align-middle;
+    font-size: 13px;
+  }
+
+  th {
+    @apply text-[11px] font-black uppercase tracking-[0.04em] text-slate-500;
+    background: linear-gradient(180deg, rgba(241,245,249,0.95) 0%, rgba(226,232,240,0.7) 100%);
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(248,250,252,0.5);
+  }
+
+  tbody tr:hover {
+    background: rgba(0,102,255,0.04);
+    box-shadow: inset 3px 0 0 var(--accent-2);
   }
 }
