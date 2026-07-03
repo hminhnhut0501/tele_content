@@ -3,7 +3,7 @@ services:
     name: content-hub-only
     runtime: python
     plan: free
-    buildCommand: npm install && npm run build:assets && pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
     envVars:
